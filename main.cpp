@@ -105,11 +105,14 @@ q: quit" << std::endl;
     game.addObserver(new ObserverTerminalQuiet());
 
     // both players use the SAME network (shared_ptr) to learn against themselves
-    auto agent1 = std::make_shared<AIRL>(net, optimizer);
-    auto agent2 = std::make_shared<AIRL>(net, optimizer);
+    //auto agent1 = std::make_shared<AIRL>(net, optimizer);
+    //auto agent2 = std::make_shared<AIRL>(net, optimizer);
 
-    game.addPlayer(Player(agent1.get(), "RL_Agent_A"));
-    game.addPlayer(Player(agent2.get(), "RL_Agent_B"));
+    AIRL* agent1 = new AIRL(net, optimizer);
+    AIRL* agent2 = new AIRL(net, optimizer);
+
+    game.addPlayer(Player(agent1, "RL_Agent_A"));
+    game.addPlayer(Player(agent2, "RL_Agent_B"));
   }
   /* ... existing gameType 1-5 logic ... */
   else if(gameType == 3) // example of using the bot in a normal battle
@@ -150,5 +153,4 @@ PokerNet global_net(23, 128);
   return 0;
 
 }// end of main
-
 

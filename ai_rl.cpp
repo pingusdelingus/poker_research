@@ -32,6 +32,7 @@ void AIRL::add_to_history(int cmd, float amt, int pos)
   }
 } // end of add_to_history
 
+
 torch::Tensor AIRL::history_to_tensor() 
 {
   std::vector<float> data;
@@ -44,10 +45,13 @@ torch::Tensor AIRL::history_to_tensor()
     len++;
     curr = curr->next;
   }
-  // rnn expects: [sequence_length, batch_size, feature_size]
+  
+  // if no history, provide a "zero" action node to keep dimensions consistent
   if (len == 0) return torch::zeros({1, 1, 3});
+  
+  // create tensor [len, 1, 3]
   return torch::from_blob(data.data(), {len, 1, 3}, torch::kFloat).clone();
-} // end of history_to_tensor
+}
 
 Action AIRL::doTurn(const Info& info) 
 {
