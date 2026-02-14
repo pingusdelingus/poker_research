@@ -70,8 +70,11 @@ public:
     bool wantsToLeave(const Info& info) override { return false; } // Never leave, keep training
 };
 
+
+/*
+ *
+ * not using anymore 
 int main() {
-    // 1. Setup Neural Net
     std::cout << "Initializing Neural Network..." << std::endl;
     PokerNet net(TensorConverter::INPUT_SIZE, 128);
     torch::optim::Adam optimizer(net->parameters(), torch::optim::AdamOptions(1e-3));
@@ -126,3 +129,5 @@ int main() {
 
     return 0;
 }
+
+*/
