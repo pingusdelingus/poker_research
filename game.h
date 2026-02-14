@@ -68,7 +68,7 @@ class Game
 
     Game(Host* host); //The game class will NOT delete the host, you have to clean up this variable yourself if needed.
     ~Game();
-
+    int getFinalStack(const std::string&name);
     //The Game class will take care of deleting the AI's and observers in its desctructor.
     void addPlayer(const Player& player);
     void addObserver(Observer* observer);

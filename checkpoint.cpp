@@ -3,46 +3,54 @@
 #include "ai_rl.h"
 #include "ai_smart.h"
 #include "host_terminal.h"
+#include "observer_terminal_quiet.h"
 #include <fstream>
+#include <iostream>
+#include "player.h"
+
 
 CheckpointManager::CheckpointManager(std::string path, int freq) 
-  : save_path(path), eval_frequency(freq) {}
+    : base_path(path), frequency(freq) {}
 
-void CheckpointManager::run_evaluation(PokerNet& net, int eval_hands) {
-  torch::NoGradGuard no_grad; // ensure no training happens during eval
-  net->eval();
+void CheckpointManager::run_evaluation(PokerNet& net, int epoch) {
+    torch::NoGradGuard no_grad; 
+    net->eval(); // set to evaluation mode
 
-  HostTerminal silent_host; // use a quiet host for speed
-  Game eval_game(&silent_host);
-  
-  // dummy optimizer as AIRL requires it, but it won't be used in eval mode
-  torch::optim::Adam dummy_opt(net->parameters(), 0); 
-  
-  auto test_bot = std::make_shared<AIRL>(net, dummy_opt);
-  auto baseline = std::make_shared<AISmart>(0.5);
+    HostTerminal host;
+    Game eval_game(&host);
+    
+    // create a dummy optimizer for the constructor
+    torch::optim::Adam dummy_opt(net->parameters(), 1e-4);
+    
+    // test bot vs a smart baseline
+    AIRL* test_bot = new AIRL(net, dummy_opt);
+    AISmart* baseline = new AISmart(0.5);
 
-  eval_game.addPlayer(Player(test_bot.get(), "Evaluated_Bot"));
-  eval_game.addPlayer(Player(baseline.get(), "Baseline_Smart"));
+    eval_game.addPlayer(Player(test_bot, "EvalBot"));
+    eval_game.addPlayer(Player(baseline, "Baseline"));
 
-  Rules rules;
-  rules.fixedNumberOfDeals = eval_hands;
-  rules.buyIn = 1000;
-  eval_game.setRules(rules);
+    Rules rules;
+    rules.buyIn = 1000;
+    rules.fixedNumberOfDeals = 50; // run 50 hands for a quick check
+    eval_game.setRules(rules);
 
-  std::cout << "\n[EVALUATION] Running " << eval_hands << " hands vs AISmart..." << std::endl;
-  eval_game.doGame();
-  
-  // logic to extract win rate from game stats would go here
-  // for now, we simply save the state
-  net->train(); 
-} // end of run_evaluation
+    std::cout << "\n--- [CHECKPOINT EVALUATION] EPOCH " << epoch << " ---" << std::endl;
+    eval_game.doGame();
+
+    // extract results from the game
+    int bot_final_stack = eval_game.getFinalStack("EvalBot");
+    
+    std::ofstream log("training_log.csv", std::ios::app);
+    log << epoch << "," << bot_final_stack << "\n";
+    log.close();
+
+    std::cout << "Evaluation Finished. Bot Stack: " << bot_final_stack << std::endl;
+    
+    net->train(); // return to training mode
+}
 
 void CheckpointManager::save_checkpoint(PokerNet& net, int epoch) {
-  std::string filename = save_path + "_epoch_" + std::to_string(epoch) + ".pt";
-  torch::save(net, filename);
-  
-  // also log to a csv for graphing
-  std::ofstream log("training_log.csv", std::ios::app);
-  log << epoch << "," << "win_rate_placeholder" << "\n";
-  log.close();
-} // end of save_checkpoint
+    std::string filename = base_path + "_epoch_" + std::to_string(epoch) + ".pt";
+    torch::save(net, filename);
+    std::cout << "Model saved to " << filename << std::endl;
+}

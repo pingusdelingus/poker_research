@@ -41,6 +41,8 @@ for his/her enjoyment.
 #include <algorithm>
 #include <iostream>
 
+
+#include "checkpoint.h"
 #include "ai.h"
 #include "ai_blindlimp.h"
 #include "ai_call.h"
@@ -64,7 +66,7 @@ for his/her enjoyment.
 #include "table.h"
 #include "tools_terminal.h"
 #include "unittest.h"
-##include <torch/torch.h>
+#include <torch/torch.h>
 #include "poker_net.h"
 #include "ai_rl.h" 
 
@@ -139,7 +141,7 @@ PokerNet global_net(23, 128);
     
     // every 10 sessions, run a formal evaluation
     if (epoch % 10 == 0) {
-      cp_manager.run_evaluation(global_net);
+      cp_manager.run_evaluation(global_net, epoch);
       cp_manager.save_checkpoint(global_net, epoch);
     }
 

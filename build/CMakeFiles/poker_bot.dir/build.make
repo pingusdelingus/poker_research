@@ -226,10 +226,24 @@ CMakeFiles/poker_bot.dir/card.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/poker_bot.dir/card.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/esteballs/Documents/coding stuff/poker_research/card.cpp" -o CMakeFiles/poker_bot.dir/card.cpp.s
 
+CMakeFiles/poker_bot.dir/checkpoint.cpp.o: CMakeFiles/poker_bot.dir/flags.make
+CMakeFiles/poker_bot.dir/checkpoint.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/checkpoint.cpp
+CMakeFiles/poker_bot.dir/checkpoint.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/poker_bot.dir/checkpoint.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/checkpoint.cpp.o -MF CMakeFiles/poker_bot.dir/checkpoint.cpp.o.d -o CMakeFiles/poker_bot.dir/checkpoint.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/checkpoint.cpp"
+
+CMakeFiles/poker_bot.dir/checkpoint.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/poker_bot.dir/checkpoint.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/esteballs/Documents/coding stuff/poker_research/checkpoint.cpp" > CMakeFiles/poker_bot.dir/checkpoint.cpp.i
+
+CMakeFiles/poker_bot.dir/checkpoint.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/poker_bot.dir/checkpoint.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/esteballs/Documents/coding stuff/poker_research/checkpoint.cpp" -o CMakeFiles/poker_bot.dir/checkpoint.cpp.s
+
 CMakeFiles/poker_bot.dir/combination.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/combination.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/combination.cpp
 CMakeFiles/poker_bot.dir/combination.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/poker_bot.dir/combination.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/poker_bot.dir/combination.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/combination.cpp.o -MF CMakeFiles/poker_bot.dir/combination.cpp.o.d -o CMakeFiles/poker_bot.dir/combination.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/combination.cpp"
 
 CMakeFiles/poker_bot.dir/combination.cpp.i: cmake_force
@@ -243,7 +257,7 @@ CMakeFiles/poker_bot.dir/combination.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/converter.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/converter.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/converter.cpp
 CMakeFiles/poker_bot.dir/converter.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/poker_bot.dir/converter.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/poker_bot.dir/converter.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/converter.cpp.o -MF CMakeFiles/poker_bot.dir/converter.cpp.o.d -o CMakeFiles/poker_bot.dir/converter.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/converter.cpp"
 
 CMakeFiles/poker_bot.dir/converter.cpp.i: cmake_force
@@ -257,7 +271,7 @@ CMakeFiles/poker_bot.dir/converter.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/deck.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/deck.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/deck.cpp
 CMakeFiles/poker_bot.dir/deck.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/poker_bot.dir/deck.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/poker_bot.dir/deck.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/deck.cpp.o -MF CMakeFiles/poker_bot.dir/deck.cpp.o.d -o CMakeFiles/poker_bot.dir/deck.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/deck.cpp"
 
 CMakeFiles/poker_bot.dir/deck.cpp.i: cmake_force
@@ -271,7 +285,7 @@ CMakeFiles/poker_bot.dir/deck.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/event.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/event.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/event.cpp
 CMakeFiles/poker_bot.dir/event.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/poker_bot.dir/event.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/poker_bot.dir/event.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/event.cpp.o -MF CMakeFiles/poker_bot.dir/event.cpp.o.d -o CMakeFiles/poker_bot.dir/event.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/event.cpp"
 
 CMakeFiles/poker_bot.dir/event.cpp.i: cmake_force
@@ -285,7 +299,7 @@ CMakeFiles/poker_bot.dir/event.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/game.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/game.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/game.cpp
 CMakeFiles/poker_bot.dir/game.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/poker_bot.dir/game.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/poker_bot.dir/game.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/game.cpp.o -MF CMakeFiles/poker_bot.dir/game.cpp.o.d -o CMakeFiles/poker_bot.dir/game.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/game.cpp"
 
 CMakeFiles/poker_bot.dir/game.cpp.i: cmake_force
@@ -296,10 +310,24 @@ CMakeFiles/poker_bot.dir/game.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/poker_bot.dir/game.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/esteballs/Documents/coding stuff/poker_research/game.cpp" -o CMakeFiles/poker_bot.dir/game.cpp.s
 
+CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o: CMakeFiles/poker_bot.dir/flags.make
+CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/graphnn_converter.cpp
+CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o -MF CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o.d -o CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/graphnn_converter.cpp"
+
+CMakeFiles/poker_bot.dir/graphnn_converter.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/poker_bot.dir/graphnn_converter.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/esteballs/Documents/coding stuff/poker_research/graphnn_converter.cpp" > CMakeFiles/poker_bot.dir/graphnn_converter.cpp.i
+
+CMakeFiles/poker_bot.dir/graphnn_converter.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/poker_bot.dir/graphnn_converter.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/esteballs/Documents/coding stuff/poker_research/graphnn_converter.cpp" -o CMakeFiles/poker_bot.dir/graphnn_converter.cpp.s
+
 CMakeFiles/poker_bot.dir/host.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/host.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/host.cpp
 CMakeFiles/poker_bot.dir/host.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/poker_bot.dir/host.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/poker_bot.dir/host.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/host.cpp.o -MF CMakeFiles/poker_bot.dir/host.cpp.o.d -o CMakeFiles/poker_bot.dir/host.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/host.cpp"
 
 CMakeFiles/poker_bot.dir/host.cpp.i: cmake_force
@@ -313,7 +341,7 @@ CMakeFiles/poker_bot.dir/host.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/host_terminal.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/host_terminal.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/host_terminal.cpp
 CMakeFiles/poker_bot.dir/host_terminal.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/poker_bot.dir/host_terminal.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/poker_bot.dir/host_terminal.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/host_terminal.cpp.o -MF CMakeFiles/poker_bot.dir/host_terminal.cpp.o.d -o CMakeFiles/poker_bot.dir/host_terminal.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/host_terminal.cpp"
 
 CMakeFiles/poker_bot.dir/host_terminal.cpp.i: cmake_force
@@ -327,7 +355,7 @@ CMakeFiles/poker_bot.dir/host_terminal.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/info.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/info.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/info.cpp
 CMakeFiles/poker_bot.dir/info.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/poker_bot.dir/info.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/poker_bot.dir/info.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/info.cpp.o -MF CMakeFiles/poker_bot.dir/info.cpp.o.d -o CMakeFiles/poker_bot.dir/info.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/info.cpp"
 
 CMakeFiles/poker_bot.dir/info.cpp.i: cmake_force
@@ -341,7 +369,7 @@ CMakeFiles/poker_bot.dir/info.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/io_terminal.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/io_terminal.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/io_terminal.cpp
 CMakeFiles/poker_bot.dir/io_terminal.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/poker_bot.dir/io_terminal.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/poker_bot.dir/io_terminal.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/io_terminal.cpp.o -MF CMakeFiles/poker_bot.dir/io_terminal.cpp.o.d -o CMakeFiles/poker_bot.dir/io_terminal.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/io_terminal.cpp"
 
 CMakeFiles/poker_bot.dir/io_terminal.cpp.i: cmake_force
@@ -355,7 +383,7 @@ CMakeFiles/poker_bot.dir/io_terminal.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/m.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/m.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/m.cpp
 CMakeFiles/poker_bot.dir/m.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/poker_bot.dir/m.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/poker_bot.dir/m.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/m.cpp.o -MF CMakeFiles/poker_bot.dir/m.cpp.o.d -o CMakeFiles/poker_bot.dir/m.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/m.cpp"
 
 CMakeFiles/poker_bot.dir/m.cpp.i: cmake_force
@@ -369,7 +397,7 @@ CMakeFiles/poker_bot.dir/m.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/main.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/main.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/main.cpp
 CMakeFiles/poker_bot.dir/main.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/poker_bot.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object CMakeFiles/poker_bot.dir/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/main.cpp.o -MF CMakeFiles/poker_bot.dir/main.cpp.o.d -o CMakeFiles/poker_bot.dir/main.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/main.cpp"
 
 CMakeFiles/poker_bot.dir/main.cpp.i: cmake_force
@@ -383,7 +411,7 @@ CMakeFiles/poker_bot.dir/main.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/observer.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/observer.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/observer.cpp
 CMakeFiles/poker_bot.dir/observer.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/poker_bot.dir/observer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/poker_bot.dir/observer.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/observer.cpp.o -MF CMakeFiles/poker_bot.dir/observer.cpp.o.d -o CMakeFiles/poker_bot.dir/observer.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/observer.cpp"
 
 CMakeFiles/poker_bot.dir/observer.cpp.i: cmake_force
@@ -397,7 +425,7 @@ CMakeFiles/poker_bot.dir/observer.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/observer_log.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/observer_log.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/observer_log.cpp
 CMakeFiles/poker_bot.dir/observer_log.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object CMakeFiles/poker_bot.dir/observer_log.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/poker_bot.dir/observer_log.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/observer_log.cpp.o -MF CMakeFiles/poker_bot.dir/observer_log.cpp.o.d -o CMakeFiles/poker_bot.dir/observer_log.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/observer_log.cpp"
 
 CMakeFiles/poker_bot.dir/observer_log.cpp.i: cmake_force
@@ -411,7 +439,7 @@ CMakeFiles/poker_bot.dir/observer_log.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/observer_statkeeper.cpp
 CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.o -MF CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.o.d -o CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/observer_statkeeper.cpp"
 
 CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.i: cmake_force
@@ -425,7 +453,7 @@ CMakeFiles/poker_bot.dir/observer_statkeeper.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/observer_terminal.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/observer_terminal.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/observer_terminal.cpp
 CMakeFiles/poker_bot.dir/observer_terminal.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/poker_bot.dir/observer_terminal.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/poker_bot.dir/observer_terminal.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/observer_terminal.cpp.o -MF CMakeFiles/poker_bot.dir/observer_terminal.cpp.o.d -o CMakeFiles/poker_bot.dir/observer_terminal.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/observer_terminal.cpp"
 
 CMakeFiles/poker_bot.dir/observer_terminal.cpp.i: cmake_force
@@ -439,7 +467,7 @@ CMakeFiles/poker_bot.dir/observer_terminal.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/observer_terminal_quiet.cpp
 CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.o -MF CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.o.d -o CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/observer_terminal_quiet.cpp"
 
 CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.i: cmake_force
@@ -453,7 +481,7 @@ CMakeFiles/poker_bot.dir/observer_terminal_quiet.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/player.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/player.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/player.cpp
 CMakeFiles/poker_bot.dir/player.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/poker_bot.dir/player.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_30) "Building CXX object CMakeFiles/poker_bot.dir/player.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/player.cpp.o -MF CMakeFiles/poker_bot.dir/player.cpp.o.d -o CMakeFiles/poker_bot.dir/player.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/player.cpp"
 
 CMakeFiles/poker_bot.dir/player.cpp.i: cmake_force
@@ -467,7 +495,7 @@ CMakeFiles/poker_bot.dir/player.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/pokereval.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/pokereval.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/pokereval.cpp
 CMakeFiles/poker_bot.dir/pokereval.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/poker_bot.dir/pokereval.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_31) "Building CXX object CMakeFiles/poker_bot.dir/pokereval.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/pokereval.cpp.o -MF CMakeFiles/poker_bot.dir/pokereval.cpp.o.d -o CMakeFiles/poker_bot.dir/pokereval.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/pokereval.cpp"
 
 CMakeFiles/poker_bot.dir/pokereval.cpp.i: cmake_force
@@ -481,7 +509,7 @@ CMakeFiles/poker_bot.dir/pokereval.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/pokereval2.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/pokereval2.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/pokereval2.cpp
 CMakeFiles/poker_bot.dir/pokereval2.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_30) "Building CXX object CMakeFiles/poker_bot.dir/pokereval2.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_32) "Building CXX object CMakeFiles/poker_bot.dir/pokereval2.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/pokereval2.cpp.o -MF CMakeFiles/poker_bot.dir/pokereval2.cpp.o.d -o CMakeFiles/poker_bot.dir/pokereval2.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/pokereval2.cpp"
 
 CMakeFiles/poker_bot.dir/pokereval2.cpp.i: cmake_force
@@ -495,7 +523,7 @@ CMakeFiles/poker_bot.dir/pokereval2.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/pokermath.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/pokermath.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/pokermath.cpp
 CMakeFiles/poker_bot.dir/pokermath.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_31) "Building CXX object CMakeFiles/poker_bot.dir/pokermath.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_33) "Building CXX object CMakeFiles/poker_bot.dir/pokermath.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/pokermath.cpp.o -MF CMakeFiles/poker_bot.dir/pokermath.cpp.o.d -o CMakeFiles/poker_bot.dir/pokermath.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/pokermath.cpp"
 
 CMakeFiles/poker_bot.dir/pokermath.cpp.i: cmake_force
@@ -509,7 +537,7 @@ CMakeFiles/poker_bot.dir/pokermath.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/random.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/random.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/random.cpp
 CMakeFiles/poker_bot.dir/random.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_32) "Building CXX object CMakeFiles/poker_bot.dir/random.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_34) "Building CXX object CMakeFiles/poker_bot.dir/random.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/random.cpp.o -MF CMakeFiles/poker_bot.dir/random.cpp.o.d -o CMakeFiles/poker_bot.dir/random.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/random.cpp"
 
 CMakeFiles/poker_bot.dir/random.cpp.i: cmake_force
@@ -523,7 +551,7 @@ CMakeFiles/poker_bot.dir/random.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/rules.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/rules.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/rules.cpp
 CMakeFiles/poker_bot.dir/rules.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_33) "Building CXX object CMakeFiles/poker_bot.dir/rules.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_35) "Building CXX object CMakeFiles/poker_bot.dir/rules.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/rules.cpp.o -MF CMakeFiles/poker_bot.dir/rules.cpp.o.d -o CMakeFiles/poker_bot.dir/rules.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/rules.cpp"
 
 CMakeFiles/poker_bot.dir/rules.cpp.i: cmake_force
@@ -537,7 +565,7 @@ CMakeFiles/poker_bot.dir/rules.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/statistics.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/statistics.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/statistics.cpp
 CMakeFiles/poker_bot.dir/statistics.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_34) "Building CXX object CMakeFiles/poker_bot.dir/statistics.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_36) "Building CXX object CMakeFiles/poker_bot.dir/statistics.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/statistics.cpp.o -MF CMakeFiles/poker_bot.dir/statistics.cpp.o.d -o CMakeFiles/poker_bot.dir/statistics.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/statistics.cpp"
 
 CMakeFiles/poker_bot.dir/statistics.cpp.i: cmake_force
@@ -551,7 +579,7 @@ CMakeFiles/poker_bot.dir/statistics.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/table.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/table.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/table.cpp
 CMakeFiles/poker_bot.dir/table.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_35) "Building CXX object CMakeFiles/poker_bot.dir/table.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_37) "Building CXX object CMakeFiles/poker_bot.dir/table.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/table.cpp.o -MF CMakeFiles/poker_bot.dir/table.cpp.o.d -o CMakeFiles/poker_bot.dir/table.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/table.cpp"
 
 CMakeFiles/poker_bot.dir/table.cpp.i: cmake_force
@@ -565,7 +593,7 @@ CMakeFiles/poker_bot.dir/table.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/tools_terminal.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/tools_terminal.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/tools_terminal.cpp
 CMakeFiles/poker_bot.dir/tools_terminal.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_36) "Building CXX object CMakeFiles/poker_bot.dir/tools_terminal.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_38) "Building CXX object CMakeFiles/poker_bot.dir/tools_terminal.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/tools_terminal.cpp.o -MF CMakeFiles/poker_bot.dir/tools_terminal.cpp.o.d -o CMakeFiles/poker_bot.dir/tools_terminal.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/tools_terminal.cpp"
 
 CMakeFiles/poker_bot.dir/tools_terminal.cpp.i: cmake_force
@@ -576,10 +604,24 @@ CMakeFiles/poker_bot.dir/tools_terminal.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/poker_bot.dir/tools_terminal.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/esteballs/Documents/coding stuff/poker_research/tools_terminal.cpp" -o CMakeFiles/poker_bot.dir/tools_terminal.cpp.s
 
+CMakeFiles/poker_bot.dir/uncommented_file.cpp.o: CMakeFiles/poker_bot.dir/flags.make
+CMakeFiles/poker_bot.dir/uncommented_file.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/uncommented_file.cpp
+CMakeFiles/poker_bot.dir/uncommented_file.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_39) "Building CXX object CMakeFiles/poker_bot.dir/uncommented_file.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/uncommented_file.cpp.o -MF CMakeFiles/poker_bot.dir/uncommented_file.cpp.o.d -o CMakeFiles/poker_bot.dir/uncommented_file.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/uncommented_file.cpp"
+
+CMakeFiles/poker_bot.dir/uncommented_file.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/poker_bot.dir/uncommented_file.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/esteballs/Documents/coding stuff/poker_research/uncommented_file.cpp" > CMakeFiles/poker_bot.dir/uncommented_file.cpp.i
+
+CMakeFiles/poker_bot.dir/uncommented_file.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/poker_bot.dir/uncommented_file.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/esteballs/Documents/coding stuff/poker_research/uncommented_file.cpp" -o CMakeFiles/poker_bot.dir/uncommented_file.cpp.s
+
 CMakeFiles/poker_bot.dir/unittest.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/unittest.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/unittest.cpp
 CMakeFiles/poker_bot.dir/unittest.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_37) "Building CXX object CMakeFiles/poker_bot.dir/unittest.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_40) "Building CXX object CMakeFiles/poker_bot.dir/unittest.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/unittest.cpp.o -MF CMakeFiles/poker_bot.dir/unittest.cpp.o.d -o CMakeFiles/poker_bot.dir/unittest.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/unittest.cpp"
 
 CMakeFiles/poker_bot.dir/unittest.cpp.i: cmake_force
@@ -593,7 +635,7 @@ CMakeFiles/poker_bot.dir/unittest.cpp.s: cmake_force
 CMakeFiles/poker_bot.dir/util.cpp.o: CMakeFiles/poker_bot.dir/flags.make
 CMakeFiles/poker_bot.dir/util.cpp.o: /Users/esteballs/Documents/coding\ stuff/poker_research/util.cpp
 CMakeFiles/poker_bot.dir/util.cpp.o: CMakeFiles/poker_bot.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_38) "Building CXX object CMakeFiles/poker_bot.dir/util.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_41) "Building CXX object CMakeFiles/poker_bot.dir/util.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/poker_bot.dir/util.cpp.o -MF CMakeFiles/poker_bot.dir/util.cpp.o.d -o CMakeFiles/poker_bot.dir/util.cpp.o -c "/Users/esteballs/Documents/coding stuff/poker_research/util.cpp"
 
 CMakeFiles/poker_bot.dir/util.cpp.i: cmake_force
@@ -617,11 +659,13 @@ poker_bot_OBJECTS = \
 "CMakeFiles/poker_bot.dir/ai_rl.cpp.o" \
 "CMakeFiles/poker_bot.dir/ai_smart.cpp.o" \
 "CMakeFiles/poker_bot.dir/card.cpp.o" \
+"CMakeFiles/poker_bot.dir/checkpoint.cpp.o" \
 "CMakeFiles/poker_bot.dir/combination.cpp.o" \
 "CMakeFiles/poker_bot.dir/converter.cpp.o" \
 "CMakeFiles/poker_bot.dir/deck.cpp.o" \
 "CMakeFiles/poker_bot.dir/event.cpp.o" \
 "CMakeFiles/poker_bot.dir/game.cpp.o" \
+"CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o" \
 "CMakeFiles/poker_bot.dir/host.cpp.o" \
 "CMakeFiles/poker_bot.dir/host_terminal.cpp.o" \
 "CMakeFiles/poker_bot.dir/info.cpp.o" \
@@ -642,6 +686,7 @@ poker_bot_OBJECTS = \
 "CMakeFiles/poker_bot.dir/statistics.cpp.o" \
 "CMakeFiles/poker_bot.dir/table.cpp.o" \
 "CMakeFiles/poker_bot.dir/tools_terminal.cpp.o" \
+"CMakeFiles/poker_bot.dir/uncommented_file.cpp.o" \
 "CMakeFiles/poker_bot.dir/unittest.cpp.o" \
 "CMakeFiles/poker_bot.dir/util.cpp.o"
 
@@ -659,11 +704,13 @@ poker_bot: CMakeFiles/poker_bot.dir/ai_random.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/ai_rl.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/ai_smart.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/card.cpp.o
+poker_bot: CMakeFiles/poker_bot.dir/checkpoint.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/combination.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/converter.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/deck.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/event.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/game.cpp.o
+poker_bot: CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/host.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/host_terminal.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/info.cpp.o
@@ -684,6 +731,7 @@ poker_bot: CMakeFiles/poker_bot.dir/rules.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/statistics.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/table.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/tools_terminal.cpp.o
+poker_bot: CMakeFiles/poker_bot.dir/uncommented_file.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/unittest.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/util.cpp.o
 poker_bot: CMakeFiles/poker_bot.dir/build.make
@@ -693,7 +741,7 @@ poker_bot: /Users/esteballs/Documents/coding\ stuff/poker_research/libtorch/lib/
 poker_bot: /Users/esteballs/Documents/coding\ stuff/poker_research/libtorch/lib/libtorch_cpu.dylib
 poker_bot: /Users/esteballs/Documents/coding\ stuff/poker_research/libtorch/lib/libc10.dylib
 poker_bot: CMakeFiles/poker_bot.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_39) "Linking CXX executable poker_bot"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/esteballs/Documents/coding stuff/poker_research/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_42) "Linking CXX executable poker_bot"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/poker_bot.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -1,9 +1,12 @@
 #include "converter.h"
 #include <torch/torch.h>
 #include <vector>
-
+#include "poker_net.h"
 // structures for the betting history linked list
-struct ActionNode
+/*
+ *   DEFINED IN converter.h
+ *
+ * struct ActionNode
 {
   int command;
   float amount_norm;
@@ -11,9 +14,11 @@ struct ActionNode
   int player_index;
   ActionNode* next;
 }; // end of actionnode
+*/
+
 
 // helper to push action to history using your arena
-ActionNode* push_history_node(Arena* a, Action act, const Info& info)
+/* ActionNode* push_history_node(Arena* a, Action act, const Info& info)
 {
   ActionNode* node = (ActionNode*)ArenaPush(a, sizeof(ActionNode));
   node->command = (int)act.command;
@@ -23,7 +28,9 @@ ActionNode* push_history_node(Arena* a, Action act, const Info& info)
   node->next = nullptr;
   return node;
 } // end of push_history_node
+*/
 
+/*
 class GraphNNConverter
 {
 public:
@@ -72,3 +79,4 @@ public:
     auto output = net->forward_with_history(static_state, history_seq, opp_stats);
   } // end of forward_pass
 }; // end of graphnnconverter
+*/

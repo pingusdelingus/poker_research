@@ -2,7 +2,8 @@
 #include <cmath>
 #include <algorithm>
 #include "action.h"
-
+#include "info.h"
+#include "ai_rl.h"
 // helper to normalize money values by the big blind
 float normalize(int value, int big_blind)
 {

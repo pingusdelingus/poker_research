@@ -393,6 +393,30 @@ card.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/card.cpp.s
 .PHONY : card.cpp.s
 
+checkpoint.o: checkpoint.cpp.o
+.PHONY : checkpoint.o
+
+# target to build an object file
+checkpoint.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/checkpoint.cpp.o
+.PHONY : checkpoint.cpp.o
+
+checkpoint.i: checkpoint.cpp.i
+.PHONY : checkpoint.i
+
+# target to preprocess a source file
+checkpoint.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/checkpoint.cpp.i
+.PHONY : checkpoint.cpp.i
+
+checkpoint.s: checkpoint.cpp.s
+.PHONY : checkpoint.s
+
+# target to generate assembly for a file
+checkpoint.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/checkpoint.cpp.s
+.PHONY : checkpoint.cpp.s
+
 combination.o: combination.cpp.o
 .PHONY : combination.o
 
@@ -512,6 +536,30 @@ game.s: game.cpp.s
 game.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/game.cpp.s
 .PHONY : game.cpp.s
+
+graphnn_converter.o: graphnn_converter.cpp.o
+.PHONY : graphnn_converter.o
+
+# target to build an object file
+graphnn_converter.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/graphnn_converter.cpp.o
+.PHONY : graphnn_converter.cpp.o
+
+graphnn_converter.i: graphnn_converter.cpp.i
+.PHONY : graphnn_converter.i
+
+# target to preprocess a source file
+graphnn_converter.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/graphnn_converter.cpp.i
+.PHONY : graphnn_converter.cpp.i
+
+graphnn_converter.s: graphnn_converter.cpp.s
+.PHONY : graphnn_converter.s
+
+# target to generate assembly for a file
+graphnn_converter.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/graphnn_converter.cpp.s
+.PHONY : graphnn_converter.cpp.s
 
 host.o: host.cpp.o
 .PHONY : host.o
@@ -993,6 +1041,30 @@ tools_terminal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/tools_terminal.cpp.s
 .PHONY : tools_terminal.cpp.s
 
+uncommented_file.o: uncommented_file.cpp.o
+.PHONY : uncommented_file.o
+
+# target to build an object file
+uncommented_file.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/uncommented_file.cpp.o
+.PHONY : uncommented_file.cpp.o
+
+uncommented_file.i: uncommented_file.cpp.i
+.PHONY : uncommented_file.i
+
+# target to preprocess a source file
+uncommented_file.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/uncommented_file.cpp.i
+.PHONY : uncommented_file.cpp.i
+
+uncommented_file.s: uncommented_file.cpp.s
+.PHONY : uncommented_file.s
+
+# target to generate assembly for a file
+uncommented_file.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/poker_bot.dir/build.make CMakeFiles/poker_bot.dir/uncommented_file.cpp.s
+.PHONY : uncommented_file.cpp.s
+
 unittest.o: unittest.cpp.o
 .PHONY : unittest.o
 
@@ -1083,6 +1155,9 @@ help:
 	@echo "... card.o"
 	@echo "... card.i"
 	@echo "... card.s"
+	@echo "... checkpoint.o"
+	@echo "... checkpoint.i"
+	@echo "... checkpoint.s"
 	@echo "... combination.o"
 	@echo "... combination.i"
 	@echo "... combination.s"
@@ -1098,6 +1173,9 @@ help:
 	@echo "... game.o"
 	@echo "... game.i"
 	@echo "... game.s"
+	@echo "... graphnn_converter.o"
+	@echo "... graphnn_converter.i"
+	@echo "... graphnn_converter.s"
 	@echo "... host.o"
 	@echo "... host.i"
 	@echo "... host.s"
@@ -1158,6 +1236,9 @@ help:
 	@echo "... tools_terminal.o"
 	@echo "... tools_terminal.i"
 	@echo "... tools_terminal.s"
+	@echo "... uncommented_file.o"
+	@echo "... uncommented_file.i"
+	@echo "... uncommented_file.s"
 	@echo "... unittest.o"
 	@echo "... unittest.i"
 	@echo "... unittest.s"

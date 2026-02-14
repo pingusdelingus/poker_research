@@ -793,3 +793,15 @@ void Game::addObserver(Observer* observer)
 {
   observers.push_back(observer);
 }
+
+int Game::getFinalStack(const std::string& name) {
+    // check currently active players
+    for (const auto& p : players) {
+        if (p.name == name) return p.stack;
+    }
+    // check players who were knocked out
+    for (const auto& p : playersOut) {
+        if (p.name == name) return p.stack;
+    }
+    return 0;
+}
