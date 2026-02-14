@@ -114,7 +114,76 @@ q: quit" << std::endl;
     game.addPlayer(Player(agent1, "RL_Agent_A"));
     game.addPlayer(Player(agent2, "RL_Agent_B"));
   }
-  /* ... existing gameType 1-5 logic ... */
+ if(gameType == 1) //Human + AI's
+  {
+    game.addPlayer(Player(new AIHuman(&host), "You"));
+
+    //choose the AI players here
+    game.addPlayer(Player(new AIRandom(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+  }
+  else if(gameType == 2) //Human + AI heads-up
+  {
+    game.addPlayer(Player(new AIHuman(&host), "You"));
+
+    //choose the AI player here
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+  }
+  else if(gameType == 3) //AI Battle
+  {
+    //game.addObserver(new ObserverTerminalQuiet());
+    game.addObserver(new ObserverTerminal());
+
+    //choose the AI players here (AISmart, AIRandom, AICall, ...)
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+
+    //for benchmarking game logic with only AICall bots
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+    //game.addPlayer(Player(new AICall(), getRandomName()));
+
+  }
+  else if(gameType == 4) //AI heads-up
+  {
+    game.addObserver(new ObserverTerminalQuiet());
+
+    //choose two AI players here
+    game.addPlayer(Player(new AIRandom(), getRandomName()));
+    game.addPlayer(Player(new AISmart(), getRandomName()));
+  }
+  else if(gameType == 5) //random game (human)
+  {
+    game.addPlayer(Player(new AIHuman(&host), "You"));
+
+    size_t num = getRandom(1, 9);
+    for(size_t i = 0; i < num; i++)
+    {
+      game.addPlayer(Player(getRandom() < 0.1 ? (AI*)(new AIRandom()) : (AI*)(new AISmart()), getRandomName()));
+    }
+  }
+
+
   else if(gameType == 3) // example of using the bot in a normal battle
   {
     game.addObserver(new ObserverTerminal());
@@ -126,8 +195,8 @@ q: quit" << std::endl;
 
   // save weights after the session
   if (gameType == 6) {
-    torch::save(net, "poker_model.pt");
-    std::cout << "Model saved to poker_model.pt" << std::endl;
+    torch::save(net, "./logs/poker_model.pt");
+    std::cout << "Model saved to ./logs/poker_model.pt" << std::endl;
   }
 
   return false;
