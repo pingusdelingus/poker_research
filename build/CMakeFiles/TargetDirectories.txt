@@ -1,3 +1,0 @@
-/Users/justinbonner/BonsaiQuant/Spring2026/poker_research/build/CMakeFiles/poker_bot.dir
-/Users/justinbonner/BonsaiQuant/Spring2026/poker_research/build/CMakeFiles/edit_cache.dir
-/Users/justinbonner/BonsaiQuant/Spring2026/poker_research/build/CMakeFiles/rebuild_cache.dir

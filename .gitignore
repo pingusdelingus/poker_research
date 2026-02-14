@@ -1,4 +1,5 @@
 libtorch
+build/
 .DS_store
 *.pt
 *.csv
