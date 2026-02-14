@@ -50,7 +50,7 @@ void CheckpointManager::run_evaluation(PokerNet& net, int epoch) {
 }
 
 void CheckpointManager::save_checkpoint(PokerNet& net, int epoch) {
-    std::string filename = base_path + "_epoch_" + std::to_string(epoch) + ".pt";
+    std::string filename = base_path + "/logs/_epoch_" + std::to_string(epoch) + ".pt";
     torch::save(net, filename);
     std::cout << "Model saved to " << filename << std::endl;
 }

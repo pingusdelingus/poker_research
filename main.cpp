@@ -195,8 +195,8 @@ q: quit" << std::endl;
 
   // save weights after the session
   if (gameType == 6) {
-    torch::save(net, "poker_model.pt");
-    std::cout << "Model saved to poker_model.pt" << std::endl;
+    torch::save(net, "./logs/poker_model.pt");
+    std::cout << "Model saved to ./logs/poker_model.pt" << std::endl;
   }
 
   return false;
