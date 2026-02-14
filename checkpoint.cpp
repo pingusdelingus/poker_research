@@ -1,3 +1,4 @@
+#include "player.h"
 #include "checkpoint.h"
 #include "game.h"
 #include "ai_rl.h"
@@ -6,8 +7,6 @@
 #include "observer_terminal_quiet.h"
 #include <fstream>
 #include <iostream>
-#include "player.h"
-
 
 CheckpointManager::CheckpointManager(std::string path, int freq) 
     : base_path(path), frequency(freq) {}
@@ -48,9 +47,8 @@ void CheckpointManager::run_evaluation(PokerNet& net, int epoch) {
     
     net->train(); // return to training mode
 }
-
 void CheckpointManager::save_checkpoint(PokerNet& net, int epoch) {
-    std::string filename = base_path + "/logs/_epoch_" + std::to_string(epoch) + ".pt";
+    std::string filename = "./logs/epoch_" + std::to_string(epoch) + ".pt";
     torch::save(net, filename);
     std::cout << "Model saved to " << filename << std::endl;
 }

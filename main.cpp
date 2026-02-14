@@ -84,13 +84,16 @@ bool doGame(PokerNet& net, torch::optim::Optimizer& optimizer)
 6: RL Self-Play Training (NEW)\n\
 q: quit" << std::endl;
   
-  char c = getChar();
+//  char c = getChar();
+  // hard coding RL self plauy
+  char c = '6';
   int gameType = (c == '6') ? 6 : (c - '0');
   if(c == 'q') return true;
 
   Rules rules;
   rules.buyIn = 1000;
   rules.bigBlind = 10;
+  rules.smallBlind = 5;
   rules.allowRebuy = (gameType == 6); // enable rebuys for training stability
   rules.fixedNumberOfDeals = (gameType == 6) ? 1000 : 100;
 
@@ -98,8 +101,11 @@ q: quit" << std::endl;
   Game game(&host);
   game.setRules(rules);
 
+
+
   if(gameType == 6) // RL Self-Play Training
   {
+    rules.smallBlind = 5;
     std::cout << "Starting Self-Play Session..." << std::endl;
     // use standard terminal observer to see progress
     game.addObserver(new ObserverTerminalQuiet());
@@ -112,7 +118,7 @@ q: quit" << std::endl;
     AIRL* agent2 = new AIRL(net, optimizer);
 
     game.addPlayer(Player(agent1, "RL_Agent_A"));
-    game.addPlayer(Player(agent2, "RL_Agent_B"));
+    game.addPlayer(Player(new AISmart() , "AISmart -- from oopoker"));
   }
  if(gameType == 1) //Human + AI's
   {

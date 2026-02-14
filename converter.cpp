@@ -5,6 +5,9 @@
 #include "info.h"
 #include "ai_rl.h"
 // helper to normalize money values by the big blind
+
+const double pi = 3.1415926535;
+
 float normalize(int value, int big_blind)
 {
   if (big_blind == 0) return 0.0f;
@@ -109,16 +112,15 @@ Action TensorConverter::vectorToAction(const Info& info, float x, float y)
 {
   float angle = std::atan2(y, x);
   float magnitude = std::sqrt(x*x + y*y);
-  double pi = 3.1415926535;
 
   // fold zone
-  if (angle > pi/4 && angle < 3*pi/4)
+  if (angle > pi/3 && angle < 2*pi/3)
   {
     return info.getCheckFoldAction();
   }
   
   // call zone
-  if (std::abs(angle) > 3*pi/4)
+  if (std::abs(angle) > 2*pi/3)
   {
     return info.getCallAction();
   }
