@@ -210,22 +210,36 @@ q: quit" << std::endl;
 
 int main()
 {
-PokerNet global_net(23, 128);
-  torch::optim::Adam optimizer(global_net->parameters(), 1e-4);
-  CheckpointManager cp_manager("poker_model", 1000); // eval every 1k hands
+    // 1. Initialize the global neural network and optimizer
+    PokerNet global_net(23, 128);
+    torch::optim::Adam optimizer(global_net->parameters(), 1e-4);
+    CheckpointManager cp_manager("poker_model", 1000);
 
-  for(int epoch = 0; ; epoch++) {
-    bool quit = doGame(global_net, optimizer);
-    
-    // every 10 sessions, run a formal evaluation
-    if (epoch % 10 == 0) {
-      cp_manager.run_evaluation(global_net, epoch);
-      cp_manager.save_checkpoint(global_net, epoch);
+    // 2. Load existing weights if they exist
+    std::string model_path = "./logs/poker_model.pt";
+    std::ifstream f(model_path.c_str());
+    if (f.good()) {
+        try {
+            torch::load(global_net, model_path);
+            std::cout << "--- [SUCCESS] Loaded weights from " << model_path << " ---" << std::endl;
+        } catch (const c10::Error& e) {
+            std::cerr << "--- [ERROR] Failed to load model: " << e.msg() << " ---" << std::endl;
+        }
+    } else {
+        std::cout << "--- [INFO] No existing model found. Starting training from scratch. ---" << std::endl;
     }
 
-    if(quit) break;
-  }
-  return 0;
+    // 3. Training Loop
+    for(int epoch = 0; ; epoch++) {
+        bool quit = doGame(global_net, optimizer);
+        
+        // every 10 sessions, run a formal evaluation
+        if (epoch % 10 == 0) {
+            cp_manager.run_evaluation(global_net, epoch);
+            cp_manager.save_checkpoint(global_net, epoch);
+        }
 
-}// end of main
-
+        if(quit) break;
+    }
+    return 0;
+} // end of main
