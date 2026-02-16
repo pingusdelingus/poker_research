@@ -1,3 +1,4 @@
 CMakeFiles/poker_bot.dir/observer.cpp.o: \
-  /Users/esteballs/Documents/coding\ stuff/poker_research/observer.cpp \
-  /Users/esteballs/Documents/coding\ stuff/poker_research/observer.h
+ /home/owner/projects/poker_research/observer.cpp \
+ /usr/include/stdc-predef.h \
+ /home/owner/projects/poker_research/observer.h

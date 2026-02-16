@@ -1,3 +1,3 @@
 CMakeFiles/poker_bot.dir/host.cpp.o: \
-  /Users/esteballs/Documents/coding\ stuff/poker_research/host.cpp \
-  /Users/esteballs/Documents/coding\ stuff/poker_research/host.h
+ /home/owner/projects/poker_research/host.cpp /usr/include/stdc-predef.h \
+ /home/owner/projects/poker_research/host.h
