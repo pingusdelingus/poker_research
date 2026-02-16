@@ -86,7 +86,10 @@ Action AISmart::doTurn(const Info& info)
   }
   else
   {
-    double win, tie, lose;
+    double win = 0.0;
+    double tie = 0.0;
+    double lose = 0.0;
+
     int num_opponents = info.getNumActivePlayers() - 1;
     if(info.round == R_FLOP) getWinChanceAgainstNAtFlop(win, tie, lose, info.getHoleCards()[0], info.getHoleCards()[1], info.boardCards[0], info.boardCards[1], info.boardCards[2], num_opponents);
     else if(info.round == R_TURN) getWinChanceAgainstNAtTurn(win, tie, lose, info.getHoleCards()[0], info.getHoleCards()[1], info.boardCards[0], info.boardCards[1], info.boardCards[2], info.boardCards[3], num_opponents);
@@ -146,7 +149,9 @@ Action AISmart::doTurn(const Info& info)
   }
 
   return info.getCheckFoldAction();
-}
+}// end of doTurn
+
+
 
 
 std::string AISmart::getAIName()
