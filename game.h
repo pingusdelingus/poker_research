@@ -48,13 +48,15 @@ class Game
 
     std::vector<Player> players;
     std::vector<Observer*> observers;
+    std::vector<Observer*> borrowedObservers;
     std::vector<Event> events;
 
     size_t eventCounter;
     int numDeals; //how much deals are done since the game started
 
     Rules rules;
-    
+    bool silent;
+
     Info infoForPlayers; //this is to speed up the game a lot, by not recreating the Info object everytime
 
   protected:
@@ -72,7 +74,9 @@ class Game
     //The Game class will take care of deleting the AI's and observers in its desctructor.
     void addPlayer(const Player& player);
     void addObserver(Observer* observer);
+    void addObserverBorrowed(Observer* observer);
     void setRules(const Rules& rules);
+    void setSilent(bool s);
 
     void runTable(Table& table);
 

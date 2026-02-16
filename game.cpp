@@ -432,13 +432,20 @@ Game::Game(Host* host)
 : host(host)
 , eventCounter(0)
 , numDeals(0)
+, silent(false)
 {
 }
 
 Game::~Game()
 {
-  //cleanup
-  for(size_t i = 0; i < observers.size(); i++) delete observers[i];
+  //cleanup - skip borrowed observers
+  for(size_t i = 0; i < observers.size(); i++) {
+    bool borrowed = false;
+    for(size_t j = 0; j < borrowedObservers.size(); j++) {
+      if(observers[i] == borrowedObservers[j]) { borrowed = true; break; }
+    }
+    if(!borrowed) delete observers[i];
+  }
   for(size_t i = 0; i < players.size(); i++) delete players[i].ai;
 }
 
@@ -774,9 +781,9 @@ void Game::doGame()
 
   runTable(table);
 
+  players = table.players; // sync final stacks back
 
-  // repalce endl with \n
-  std::cout << "Game Finished after " << numDeals << " deals.\n" ;
+  if(!silent) std::cout << "Game Finished after " << numDeals << " deals.\n" ;
   //if(!table.players.empty()) std::cout << "Winner: " << table.players[0].getName() << " (AI: " << table.players[0].ai->getAIName() << ")" << std::endl;
 
   declareWinners(table);
@@ -797,6 +804,17 @@ void Game::addPlayer(const Player& player)
 void Game::addObserver(Observer* observer)
 {
   observers.push_back(observer);
+}
+
+void Game::addObserverBorrowed(Observer* observer)
+{
+  observers.push_back(observer);
+  borrowedObservers.push_back(observer);
+}
+
+void Game::setSilent(bool s)
+{
+  silent = s;
 }
 
 int Game::getFinalStack(const std::string& name) {

@@ -55,11 +55,13 @@ for his/her enjoyment.
 #include "combination.h"
 #include "game.h"
 #include "host_terminal.h"
+#include "host_silent.h"
 #include "info.h"
 #include "io_terminal.h"
 #include "observer.h"
 #include "observer_terminal.h"
 #include "observer_terminal_quiet.h"
+#include "observer_dashboard.h"
 #include "observer_log.h"
 #include "pokermath.h"
 #include "random.h"
@@ -68,24 +70,13 @@ for his/her enjoyment.
 #include "unittest.h"
 #include <torch/torch.h>
 #include "poker_net.h"
-#include "ai_rl.h" 
+#include "ai_rl.h"
 
 // returns whether user wants to quit
 
-bool doGame(PokerNet& net, torch::optim::Optimizer& optimizer)
+bool doGame(PokerNet& net, torch::optim::Optimizer& optimizer, ObserverDashboard* dashboard, int epoch)
 {
-  std::cout << "Welcome to OOPoker RL Trainer\n" << std::endl;
-
-  std::cout << "Choose Game Type\n\
-1: human + AI's\n\
-2: human + AI heads-up\n\
-3: AI battle\n\
-4: AI battle heads-up\n\
-6: RL Self-Play Training (NEW)\n\
-q: quit" << std::endl;
-  
-//  char c = getChar();
-  // hard coding RL self plauy
+  // hard coding RL self play
   char c = '6';
   int gameType = (c == '6') ? 6 : (c - '0');
   if(c == 'q') return true;
@@ -94,35 +85,31 @@ q: quit" << std::endl;
   rules.buyIn = 1000;
   rules.bigBlind = 10;
   rules.smallBlind = 5;
-  rules.allowRebuy = (gameType == 6); // enable rebuys for training stability
+  rules.allowRebuy = false;
   rules.fixedNumberOfDeals = (gameType == 6) ? 1000 : 100;
 
-  HostTerminal host;
-  Game game(&host);
+  HostSilent silent_host;
+  HostTerminal terminal_host;
+  Host* host = (gameType == 6) ? (Host*)&silent_host : (Host*)&terminal_host;
+
+  Game game(host);
   game.setRules(rules);
-
-
 
   if(gameType == 6) // RL Self-Play Training
   {
-    rules.smallBlind = 5;
-    std::cout << "Starting Self-Play Session..." << std::endl;
-    // use standard terminal observer to see progress
-    game.addObserver(new ObserverTerminalQuiet());
-
-    // both players use the SAME network (shared_ptr) to learn against themselves
-    //auto agent1 = std::make_shared<AIRL>(net, optimizer);
-    //auto agent2 = std::make_shared<AIRL>(net, optimizer);
+    game.setSilent(true);
+    dashboard->setEpoch(epoch);
+    game.addObserverBorrowed(dashboard);
 
     AIRL* agent1 = new AIRL(net, optimizer);
     AIRL* agent2 = new AIRL(net, optimizer);
 
     game.addPlayer(Player(agent1, "RL_Agent_A"));
-    game.addPlayer(Player(new AISmart() , "AISmart -- from oopoker"));
+    game.addPlayer(Player(new AISmart() , "OOPoker Bot"));
   }
  if(gameType == 1) //Human + AI's
   {
-    game.addPlayer(Player(new AIHuman(&host), "You"));
+    game.addPlayer(Player(new AIHuman(&terminal_host), "You"));
 
     //choose the AI players here
     game.addPlayer(Player(new AIRandom(), getRandomName()));
@@ -135,7 +122,7 @@ q: quit" << std::endl;
   }
   else if(gameType == 2) //Human + AI heads-up
   {
-    game.addPlayer(Player(new AIHuman(&host), "You"));
+    game.addPlayer(Player(new AIHuman(&terminal_host), "You"));
 
     //choose the AI player here
     game.addPlayer(Player(new AISmart(), getRandomName()));
@@ -156,19 +143,6 @@ q: quit" << std::endl;
     game.addPlayer(Player(new AISmart(), getRandomName()));
     game.addPlayer(Player(new AISmart(), getRandomName()));
     game.addPlayer(Player(new AISmart(), getRandomName()));
-
-    //for benchmarking game logic with only AICall bots
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-    //game.addPlayer(Player(new AICall(), getRandomName()));
-
   }
   else if(gameType == 4) //AI heads-up
   {
@@ -180,7 +154,7 @@ q: quit" << std::endl;
   }
   else if(gameType == 5) //random game (human)
   {
-    game.addPlayer(Player(new AIHuman(&host), "You"));
+    game.addPlayer(Player(new AIHuman(&terminal_host), "You"));
 
     size_t num = getRandom(1, 9);
     for(size_t i = 0; i < num; i++)
@@ -189,20 +163,11 @@ q: quit" << std::endl;
     }
   }
 
-
-  else if(gameType == 3) // example of using the bot in a normal battle
-  {
-    game.addObserver(new ObserverTerminal());
-    game.addPlayer(Player(new AIRL(net, optimizer), "Trained_Bot"));
-    for(int i = 0; i < 5; ++i) game.addPlayer(Player(new AISmart(), getRandomName()));
-  }
-
   game.doGame();
 
   // save weights after the session
   if (gameType == 6) {
     torch::save(net, "./logs/poker_model.pt");
-    std::cout << "Model saved to ./logs/poker_model.pt" << std::endl;
   }
 
   return false;
@@ -221,21 +186,21 @@ int main()
     if (f.good()) {
         try {
             torch::load(global_net, model_path);
-            std::cout << "--- [SUCCESS] Loaded weights from " << model_path << " ---" << std::endl;
         } catch (const c10::Error& e) {
-            std::cerr << "--- [ERROR] Failed to load model: " << e.msg() << " ---" << std::endl;
+            std::cerr << "Failed to load model: " << e.msg() << std::endl;
         }
-    } else {
-        std::cout << "--- [INFO] No existing model found. Starting training from scratch. ---" << std::endl;
     }
 
-    // 3. Training Loop
+    // 3. Create persistent dashboard
+    ObserverDashboard dashboard(1000);
+
+    // 4. Training Loop
     for(int epoch = 0; ; epoch++) {
-        bool quit = doGame(global_net, optimizer);
-        
+        bool quit = doGame(global_net, optimizer, &dashboard, epoch);
+
         // every 10 sessions, run a formal evaluation
         if (epoch % 10 == 0) {
-            cp_manager.run_evaluation(global_net, epoch);
+            cp_manager.run_evaluation(global_net, epoch, &dashboard);
             cp_manager.save_checkpoint(global_net, epoch);
         }
 
