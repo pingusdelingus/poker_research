@@ -43,8 +43,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/poker_bot.dir/info.cpp.o.d"
   "CMakeFiles/poker_bot.dir/io_terminal.cpp.o"
   "CMakeFiles/poker_bot.dir/io_terminal.cpp.o.d"
-  "CMakeFiles/poker_bot.dir/m.cpp.o"
-  "CMakeFiles/poker_bot.dir/m.cpp.o.d"
   "CMakeFiles/poker_bot.dir/main.cpp.o"
   "CMakeFiles/poker_bot.dir/main.cpp.o.d"
   "CMakeFiles/poker_bot.dir/observer.cpp.o"
