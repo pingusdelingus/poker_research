@@ -1,3 +1,14 @@
+to run:
+go to pytorch.org and download libtorch for you arc. + os
+unzip and place into root dir
+
+cd into build
+run "cmake -DCMAKE_PREFIX_PATH=/abs/path/to/the/libtorch/folder/in/the/repo"
+run "cmake --build . --config Release" inside of build
+run ./poker_bot inside of build
+
+
+
 OOPoker
 -------
 

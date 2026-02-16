@@ -172,6 +172,7 @@ struct Info //all the info a player gets during a decision
 
   int getSmallBlind() const;
   int getBigBlind() const;
+
 };
 
 

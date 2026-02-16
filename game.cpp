@@ -544,7 +544,8 @@ void Game::runTable(Table& table)
 {
   if(table.players.size() > 10)
   {
-    std::cout << "Sorry, max 10 players per table are supported" << std::endl;
+    // replace endl with \n
+    std::cout << "Sorry, max 10 players per table are supported\n";
     return;
   }
 
@@ -712,7 +713,8 @@ void Game::declareWinners(Table& table)
 
   for(size_t i = 0; i < playerCopy.size(); i++)
   {
-    if(pos == 1) std::cout << "Winner: " << playerCopy[0].getName() << " (AI: " << playerCopy[0].ai->getAIName() << ")" << std::endl;
+    // replace endl with \n
+    if(pos == 1) std::cout << "Winner: " << playerCopy[0].getName() << " (AI: " << playerCopy[0].ai->getAIName() << ")\n";
     events.push_back(Event(E_TOURNAMENT_RANK
                          , pos
                          , playerCopy[i].stack - playerCopy[i].buyInTotal
@@ -761,8 +763,9 @@ void Game::doGame()
   }
 
   std::stringstream ss;
-  ss << "The game begins. The AI's of the players are: " << std::endl;
-  for(size_t i = 0; i < players.size(); i++) ss << table.players[i].getName() << ": " << table.players[i].ai->getAIName() << std::endl;
+  // replcae endl with \n
+  ss << "The game begins. The AI's of the players are: \n";
+  for(size_t i = 0; i < players.size(); i++) ss << table.players[i].getName() << ": " << table.players[i].ai->getAIName() << "\n";
   events.push_back(Event(ss.str(), E_LOG_MESSAGE));
 
   sendEvents(table);
@@ -771,7 +774,9 @@ void Game::doGame()
 
   runTable(table);
 
-  std::cout << "Game Finished after " << numDeals << " deals." << std::endl;
+
+  // repalce endl with \n
+  std::cout << "Game Finished after " << numDeals << " deals.\n" ;
   //if(!table.players.empty()) std::cout << "Winner: " << table.players[0].getName() << " (AI: " << table.players[0].ai->getAIName() << ")" << std::endl;
 
   declareWinners(table);

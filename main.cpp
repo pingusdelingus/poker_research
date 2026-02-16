@@ -84,13 +84,16 @@ bool doGame(PokerNet& net, torch::optim::Optimizer& optimizer)
 6: RL Self-Play Training (NEW)\n\
 q: quit" << std::endl;
   
-  char c = getChar();
+//  char c = getChar();
+  // hard coding RL self plauy
+  char c = '6';
   int gameType = (c == '6') ? 6 : (c - '0');
   if(c == 'q') return true;
 
   Rules rules;
   rules.buyIn = 1000;
   rules.bigBlind = 10;
+  rules.smallBlind = 5;
   rules.allowRebuy = (gameType == 6); // enable rebuys for training stability
   rules.fixedNumberOfDeals = (gameType == 6) ? 1000 : 100;
 
@@ -98,8 +101,11 @@ q: quit" << std::endl;
   Game game(&host);
   game.setRules(rules);
 
+
+
   if(gameType == 6) // RL Self-Play Training
   {
+    rules.smallBlind = 5;
     std::cout << "Starting Self-Play Session..." << std::endl;
     // use standard terminal observer to see progress
     game.addObserver(new ObserverTerminalQuiet());
@@ -112,7 +118,7 @@ q: quit" << std::endl;
     AIRL* agent2 = new AIRL(net, optimizer);
 
     game.addPlayer(Player(agent1, "RL_Agent_A"));
-    game.addPlayer(Player(agent2, "RL_Agent_B"));
+    game.addPlayer(Player(new AISmart() , "AISmart -- from oopoker"));
   }
  if(gameType == 1) //Human + AI's
   {
@@ -204,22 +210,36 @@ q: quit" << std::endl;
 
 int main()
 {
-PokerNet global_net(23, 128);
-  torch::optim::Adam optimizer(global_net->parameters(), 1e-4);
-  CheckpointManager cp_manager("poker_model", 1000); // eval every 1k hands
+    // 1. Initialize the global neural network and optimizer
+    PokerNet global_net(23, 128);
+    torch::optim::Adam optimizer(global_net->parameters(), 1e-4);
+    CheckpointManager cp_manager("poker_model", 1000);
 
-  for(int epoch = 0; ; epoch++) {
-    bool quit = doGame(global_net, optimizer);
-    
-    // every 10 sessions, run a formal evaluation
-    if (epoch % 10 == 0) {
-      cp_manager.run_evaluation(global_net, epoch);
-      cp_manager.save_checkpoint(global_net, epoch);
+    // 2. Load existing weights if they exist
+    std::string model_path = "./logs/poker_model.pt";
+    std::ifstream f(model_path.c_str());
+    if (f.good()) {
+        try {
+            torch::load(global_net, model_path);
+            std::cout << "--- [SUCCESS] Loaded weights from " << model_path << " ---" << std::endl;
+        } catch (const c10::Error& e) {
+            std::cerr << "--- [ERROR] Failed to load model: " << e.msg() << " ---" << std::endl;
+        }
+    } else {
+        std::cout << "--- [INFO] No existing model found. Starting training from scratch. ---" << std::endl;
     }
 
-    if(quit) break;
-  }
-  return 0;
+    // 3. Training Loop
+    for(int epoch = 0; ; epoch++) {
+        bool quit = doGame(global_net, optimizer);
+        
+        // every 10 sessions, run a formal evaluation
+        if (epoch % 10 == 0) {
+            cp_manager.run_evaluation(global_net, epoch);
+            cp_manager.save_checkpoint(global_net, epoch);
+        }
 
-}// end of main
-
+        if(quit) break;
+    }
+    return 0;
+} // end of main

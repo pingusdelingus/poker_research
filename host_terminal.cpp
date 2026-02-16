@@ -47,6 +47,7 @@ void HostTerminal::onDealDone(const Info& info)
   {
     drawTable(info);
     
+
     if(pressAnyKeyOrQuit()) quit = true;
   }
   else
@@ -64,9 +65,10 @@ void HostTerminal::onGameBegin(const Info& info)
 void HostTerminal::onGameDone(const Info& info)
 {
   (void)info;
-
+  if (human_detected){
   std::cout << std::endl << "Game finished. Press any key to show final events." << std::endl;
   getChar();
+  }
 }
 
 bool HostTerminal::wantToQuit() const
