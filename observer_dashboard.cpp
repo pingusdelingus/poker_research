@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
+#include <climits>
 
 ObserverDashboard::ObserverDashboard(int totalDeals)
 : epochKeeper(new StatKeeper())
@@ -29,12 +30,14 @@ void ObserverDashboard::tallyEpochWinner()
   epochKeeper->getAllPlayers(players);
 
   std::string winner;
-  int bestChipsWon = -1;
+  int bestNet = INT_MIN;
   for(const auto& name : players) {
     const PlayerStats* stats = epochKeeper->getPlayerStats(name);
     if(!stats) continue;
-    if(stats->chips_won > bestChipsWon) {
-      bestChipsWon = stats->chips_won;
+    // net profit: zero-sum across all players (sum of all E_WIN == sum of all chips placed)
+    int net = stats->chips_won - stats->chips_lost;
+    if(net > bestNet) {
+      bestNet = net;
       winner = name;
     }
   }

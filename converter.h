@@ -19,10 +19,10 @@ struct ActionNode {
 
 class TensorConverter {
 public:
-    // 4 (Hole Cards) + 10 (Board) + 6 (Game State) = 20 Floats
-    static constexpr const int INPUT_SIZE = 20; 
+    // 4 (Hole Cards) + 10 (Board) + 14 (Game State + Derived) = 28 Floats
+    static constexpr const int INPUT_SIZE = 28;
 
-    // Converts the game state (Info) into a [1, 20] Tensor for the NN
+    // Converts the game state (Info) into a [1, 28] Tensor for the NN
     static torch::Tensor infoToTensor(const Info& info);
 
     // Converts an existing Action (from AISmart) into a Target Vector (x, y)

@@ -721,7 +721,7 @@ void Game::declareWinners(Table& table)
   for(size_t i = 0; i < playerCopy.size(); i++)
   {
     // replace endl with \n
-    if(pos == 1) std::cout << "Winner: " << playerCopy[0].getName() << " (AI: " << playerCopy[0].ai->getAIName() << ")\n";
+    if(pos == 1 && !silent) std::cout << "Winner: " << playerCopy[0].getName() << " (AI: " << playerCopy[0].ai->getAIName() << ")\n";
     events.push_back(Event(E_TOURNAMENT_RANK
                          , pos
                          , playerCopy[i].stack - playerCopy[i].buyInTotal

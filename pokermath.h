@@ -80,7 +80,7 @@ boardCards: vector must have size 0, 3, 4 or 5 (pre-flop, flop, turn, river), re
 numOpponents: number of active opponents
 numSamples: used when this function will use many samples to simulate many possible hand combinations. The higher the value, the more accurate the result, but the slower the function. 50000 is a good value.
 */
-double getPotEquity(const std::vector<Card>& holeCards, const std::vector<Card>& boardCards, int numOpponents, int numSamples = 50000);
+double getPotEquity(const std::vector<Card>& holeCards, const std::vector<Card>& boardCards, int numOpponents, int numSamples = 10000);
 
 
 /*
@@ -100,7 +100,7 @@ bool getWinChanceWithKnownHands(std::vector<double>& win, std::vector<double>& t
                               , const std::vector<Card>& holeCards1
                               , const std::vector<Card>& holeCards2
                               , const std::vector<Card>& boardCards
-                              , int numSamples = 50000);
+                              , int numSamples = 10000);
 
 
 
@@ -181,21 +181,21 @@ time is needed. Setting it lower makes your bot faster.
 
 void getWinChanceAgainstNAtPreFlop(double& win, double& tie, double& lose
                                  , const Card& hand1, const Card& hand2
-                                 , int numOpponents, int numSamples = 50000);
+                                 , int numOpponents, int numSamples = 10000);
 
 
 void getWinChanceAgainstNAtFlop(double& win, double& tie, double& lose
                                , const Card& hand1, const Card& hand2
                                , const Card& table1, const Card& table2, const Card& table3
-                               , int numOpponents, int numSamples = 50000);
+                               , int numOpponents, int numSamples = 10000);
 
 void getWinChanceAgainstNAtTurn(double& win, double& tie, double& lose
                                , const Card& hand1, const Card& hand2
                                , const Card& table1, const Card& table2, const Card& table3, const Card& table4
-                               , int numOpponents, int numSamples = 50000);
+                               , int numOpponents, int numSamples = 10000);
 
 void getWinChanceAgainstNAtRiver(double& win, double& tie, double& lose
                                , const Card& hand1, const Card& hand2
                                , const Card& table1, const Card& table2, const Card& table3, const Card& table4, const Card& table5
-                               , int numOpponents, int numSamples = 50000);
+                               , int numOpponents, int numSamples = 10000);
 

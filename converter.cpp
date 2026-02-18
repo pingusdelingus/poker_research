@@ -30,9 +30,8 @@ void TensorConverter::encodeEmptyCard(std::vector<float>& features)
 torch::Tensor TensorConverter::infoToTensor(const Info& info)
 {
   std::vector<float> features;
-  // expanded input size to include equity and m-ratio
-  // total size: 4 (hole) + 10 (board) + 9 (stats) = 23
-  features.reserve(23);
+  // total size: 4 (hole) + 10 (board) + 14 (game state + derived) = 28
+  features.reserve(28);
 
   int bb = info.getBigBlind();
 
@@ -62,23 +61,47 @@ torch::Tensor TensorConverter::infoToTensor(const Info& info)
     }
   }
 
-  //  game state and mathematical features
-  features.push_back(normalize(info.getPot(), bb));
-  features.push_back(normalize(info.getStack(), bb));
-  features.push_back(normalize(info.getCallAmount(), bb));
-  features.push_back(normalize(info.getWager(), bb));
-  
-  // normalized position 0 to 1
+  //  game state features
+  features.push_back(normalize(info.getPot(), bb));                                       // [14] pot
+  features.push_back(normalize(info.getStack(), bb));                                     // [15] stack
+  features.push_back(normalize(info.getCallAmount(), bb));                                // [16] call amount
+  features.push_back(normalize(info.getWager(), bb));                                     // [17] wager
+
   float pos = (float)info.getPosition() / (float)std::max(1, info.getNumPlayers() - 1);
-  features.push_back(pos);
+  features.push_back(pos);                                                                // [18] position
 
-  // use oopoker built in math for better learning
-  features.push_back((float)info.getPotEquity());
-  features.push_back((float)info.getPotOddsPercentage());
-  features.push_back((float)info.getMRatio() / 50.0f); // cap m-ratio at 50 for normalization
-  features.push_back((float)info.getNumActivePlayers() / 9.0f);
+  float equity = (float)info.getPotEquity();
+  float potOddsPct = (float)info.getPotOddsPercentage();
+  features.push_back(equity);                                                             // [19] pot equity
+  features.push_back(potOddsPct);                                                         // [20] pot odds pct
+  features.push_back((float)info.getMRatio() / 50.0f);                                    // [21] m-ratio
+  features.push_back((float)info.getNumActivePlayers() / 9.0f);                           // [22] active players
 
-  return torch::from_blob(features.data(), {1, 23}, torch::kFloat).clone();
+  //  new derived features
+  // betting round: 0=preflop, 0.33=flop, 0.67=turn, 1.0=river
+  float round_norm = 0.0f;
+  if (info.round == R_FLOP) round_norm = 0.33f;
+  else if (info.round == R_TURN) round_norm = 0.67f;
+  else if (info.round == R_RIVER || info.round == R_SHOWDOWN) round_norm = 1.0f;
+  features.push_back(round_norm);                                                         // [23] betting round
+
+  // equity vs pot odds gap: positive = calling is +EV
+  features.push_back(equity - potOddsPct);                                                // [24] equity gap
+
+  // pot commitment ratio: how much of starting chips are already in the pot
+  float total_chips = (float)(info.getStack() + info.getWager());
+  float commit_ratio = (total_chips > 0) ? (float)info.getWager() / total_chips : 0.0f;
+  features.push_back(commit_ratio);                                                       // [25] pot commitment
+
+  // stack-to-pot ratio: room for maneuvering (capped at 20 for normalization)
+  int pot = info.getPot();
+  float spr = (pot > 0) ? std::min(20.0f, (float)info.getStack() / (float)pot) / 20.0f : 1.0f;
+  features.push_back(spr);                                                                // [26] SPR
+
+  // turn number within the current betting round (how many re-raises)
+  features.push_back((float)info.turn / 1000.0f);                                        // [27] turn number
+
+  return torch::from_blob(features.data(), {1, 28}, torch::kFloat).clone();
 } // end of infototensor
 
 torch::Tensor TensorConverter::actionToTarget(const Action& action, const Info& info)
