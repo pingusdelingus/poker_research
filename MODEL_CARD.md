@@ -1,8 +1,8 @@
 # PokerNet Model Card
 
-## Input Features (Static State Vector) — 23 floats
+## Input Features (Static State Vector) — 34 floats
 
-The game state is converted into a flat tensor of 23 normalized floats via `TensorConverter::infoToTensor()` in `converter.cpp`.
+The game state is converted into a flat tensor of 34 normalized floats via `TensorConverter::infoToTensor()` in `converter.cpp`.
 
 | Index | Feature | Normalization |
 |-------|---------|---------------|
@@ -22,8 +22,20 @@ The game state is converted into a flat tensor of 23 normalized floats via `Tens
 | 18 | Table position | position / (num_players - 1) |
 | 19 | Pot equity | raw float (0.0 - 1.0) |
 | 20 | Pot odds percentage | raw float (0.0 - 1.0) |
-| 21 | M-Ratio | m_ratio / 50 |
+| 21 | M-Ratio | m_ratio / 50 | # what is this
 | 22 | Active players | num_active / 9 |
+* | 23 |  Assumed Opponent Hand Range | 13x13 matrix of softmaxe'd ins | *
+* | 24 |  Seen Opponent Hand Range (showdown ) | 13x13 matrix of softmaxe'd ins | # might be useless * 
+| 25 |  Opponent Hand Bucket | 3 or 4 enumerations |
+| 26 | Vpip 10 | voluntarily put (money) into pot |
+| 27 | Vpip 30 | voluntarily put (money) into pot | 
+| 28 | Vpip 50 | voluntarily put (money) into pot | 
+| 29 | Vpip 100 | voluntarily put (money) into pot| 
+| 31 | pfr10  | preflop raising rate| 
+| 32 | pfr30  | preflop raising rate| 
+| 33 | pfr50  | preflop raising rate| 
+| 34 | pfr100  | preflop raising rate| 
+
 
 > **Note:** Active players (index 22) is included to support future expansion beyond heads-up play. In the current heads-up training mode this value is always 2/9 (~0.22), but it will become meaningful if the model is trained or deployed in multi-player games.
 
