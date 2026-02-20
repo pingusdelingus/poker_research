@@ -24,8 +24,8 @@ The game state is converted into a flat tensor of 34 normalized floats via `Tens
 | 20 | Pot odds percentage | raw float (0.0 - 1.0) |
 | 21 | M-Ratio | m_ratio / 50 | # what is this
 | 22 | Active players | num_active / 9 |
-* | 23 |  Assumed Opponent Hand Range | 13x13 matrix of softmaxe'd ins | *
-* | 24 |  Seen Opponent Hand Range (showdown ) | 13x13 matrix of softmaxe'd ins | # might be useless * 
+ | 23 |  Assumed Opponent Hand Range | 13x13 matrix of softmaxe'd ins | 
+ | 24 |  Seen Opponent Hand Range (showdown ) | 13x13 matrix of softmaxe'd ins | # might be useless 
 | 25 |  Opponent Hand Bucket | 3 or 4 enumerations |
 | 26 | Vpip 10 | voluntarily put (money) into pot |
 | 27 | Vpip 30 | voluntarily put (money) into pot | 
