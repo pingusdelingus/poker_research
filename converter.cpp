@@ -14,24 +14,11 @@ float normalize(int value, int big_blind)
   return (float)value / (float)big_blind;
 } // end of normalize
 
-void TensorConverter::encodeCard(const Card& c, std::vector<float>& features)
-{
-  // normalize rank 2-14 to 0.0-1.0 and suit 0-3 to 0.0-1.0
-  features.push_back((c.value - 2.0f) / 12.0f);
-  features.push_back((float)c.suit / 3.0f);
-} // end of encodecard
-
-void TensorConverter::encodeEmptyCard(std::vector<float>& features)
-{
-  features.push_back(-1.0f);
-  features.push_back(-1.0f);
-} // end of encodeemptycard
-
-torch::Tensor TensorConverter::infoToTensor(const Info& info)
+torch::Tensor TensorConverter::infoToTensor(const Info& info, const std::vector<float>& opponent_stats)
 {
   std::vector<float> features;
-  // total size: 4 (hole) + 10 (board) + 14 (game state + derived) = 28
-  features.reserve(28);
+  // total size: 23 (Static) + 11 (Opponent) = 34
+  features.reserve(INPUT_SIZE);
 
   int bb = info.getBigBlind();
 
@@ -39,13 +26,17 @@ torch::Tensor TensorConverter::infoToTensor(const Info& info)
   const auto& hole = info.getHoleCards();
   if (hole.size() >= 2)
   {
-    encodeCard(hole[0], features);
-    encodeCard(hole[1], features);
+    Card c = hole[0];
+    features.push_back((c.value - 2.0f) / 12.0f);
+    features.push_back((float)c.suit / 3.0f);
+    c = hole[1];
+    features.push_back((c.value - 2.0f) / 12.0f);
+    features.push_back((float)c.suit / 3.0f);
   }
   else
   {
-    encodeEmptyCard(features);
-    encodeEmptyCard(features);
+    features.push_back(-1.0f); features.push_back(-1.0f);
+    features.push_back(-1.0f); features.push_back(-1.0f);
   }
 
   //  board cards
@@ -53,15 +44,17 @@ torch::Tensor TensorConverter::infoToTensor(const Info& info)
   {
     if (i < (int)info.boardCards.size())
     {
-      encodeCard(info.boardCards[i], features);
+      Card c = info.boardCards[i];
+      features.push_back((c.value - 2.0f) / 12.0f);
+      features.push_back((float)c.suit / 3.0f);
     }
     else
     {
-      encodeEmptyCard(features);
+      features.push_back(-1.0f); features.push_back(-1.0f);
     }
   }
 
-  //  game state features
+  //  game state features [14-22]
   features.push_back(normalize(info.getPot(), bb));                                       // [14] pot
   features.push_back(normalize(info.getStack(), bb));                                     // [15] stack
   features.push_back(normalize(info.getCallAmount(), bb));                                // [16] call amount
@@ -77,31 +70,15 @@ torch::Tensor TensorConverter::infoToTensor(const Info& info)
   features.push_back((float)info.getMRatio() / 50.0f);                                    // [21] m-ratio
   features.push_back((float)info.getNumActivePlayers() / 9.0f);                           // [22] active players
 
-  //  new derived features
-  // betting round: 0=preflop, 0.33=flop, 0.67=turn, 1.0=river
-  float round_norm = 0.0f;
-  if (info.round == R_FLOP) round_norm = 0.33f;
-  else if (info.round == R_TURN) round_norm = 0.67f;
-  else if (info.round == R_RIVER || info.round == R_SHOWDOWN) round_norm = 1.0f;
-  features.push_back(round_norm);                                                         // [23] betting round
+  // Append Opponent Stats [23-33]
+  if (opponent_stats.size() == OPPONENT_SIZE) {
+      features.insert(features.end(), opponent_stats.begin(), opponent_stats.end());
+  } else {
+      // Fallback if size mismatch (should warn or error, but filling with 0s for safety)
+      for(int i=0; i<OPPONENT_SIZE; ++i) features.push_back(0.0f);
+  }
 
-  // equity vs pot odds gap: positive = calling is +EV
-  features.push_back(equity - potOddsPct);                                                // [24] equity gap
-
-  // pot commitment ratio: how much of starting chips are already in the pot
-  float total_chips = (float)(info.getStack() + info.getWager());
-  float commit_ratio = (total_chips > 0) ? (float)info.getWager() / total_chips : 0.0f;
-  features.push_back(commit_ratio);                                                       // [25] pot commitment
-
-  // stack-to-pot ratio: room for maneuvering (capped at 20 for normalization)
-  int pot = info.getPot();
-  float spr = (pot > 0) ? std::min(20.0f, (float)info.getStack() / (float)pot) / 20.0f : 1.0f;
-  features.push_back(spr);                                                                // [26] SPR
-
-  // turn number within the current betting round (how many re-raises)
-  features.push_back((float)info.turn / 1000.0f);                                        // [27] turn number
-
-  return torch::from_blob(features.data(), {1, 28}, torch::kFloat).clone();
+  return torch::from_blob(features.data(), {1, INPUT_SIZE}, torch::kFloat).clone();
 } // end of infototensor
 
 torch::Tensor TensorConverter::actionToTarget(const Action& action, const Info& info)
@@ -121,7 +98,6 @@ torch::Tensor TensorConverter::actionToTarget(const Action& action, const Info& 
     case A_RAISE:
       x = 1.0f;
       // use y to represent raise sizing relative to stack
-      // this teaches the network sizing during imitation
       float total_stack = (float)info.getStack();
       y = (total_stack > 0) ? (float)action.amount / total_stack : 0.0f;
       break;

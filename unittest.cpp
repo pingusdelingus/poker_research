@@ -552,6 +552,55 @@ void testCardPrint() {
   std::cout << std::endl;
 }
 
+void testHandBands()
+{
+  std::cout << "Testing Hand Bands" << std::endl;
+  
+  auto getBand = [](const std::string& h1, const std::string& h2, const std::vector<std::string>& b) {
+      std::vector<Card> hole;
+      hole.push_back(Card(h1));
+      hole.push_back(Card(h2));
+      std::vector<Card> board;
+      for (const auto& s : b) board.push_back(Card(s));
+      return getHandBand(hole, board);
+  };
+
+  ASSERT_EQUALS(HB_AIR, getBand("2h", "7d", {"As", "Kd", "Qc"}));
+  ASSERT_EQUALS(HB_MADE_STRONG, getBand("Ah", "Ad", {"2s", "7d", "Js"})); // Overpair
+  ASSERT_EQUALS(HB_DRAW_STRONG, getBand("Th", "Jh", {"8h", "9h", "2d"})); // OESD + Flush draw
+  ASSERT_EQUALS(HB_MADE_NUTS, getBand("7h", "8h", {"5h", "6h", "9h"})); // Straight Flush
+  ASSERT_EQUALS(HB_MADE_NUTS, getBand("As", "Kd", {"Ad", "Ah", "Kh"})); // Full House
+  
+  std::cout << "Hand Bands tests passed!" << std::endl << std::endl;
+}
+
+void testOpponentPolarity()
+{
+  std::cout << "Testing Opponent Polarity" << std::endl;
+  
+  Info info;
+  info.rules.bigBlind = 10;
+  info.round = R_RIVER;
+  info.players.resize(2);
+  info.players[0].name = "Hero";
+  info.players[1].name = "Villain";
+  
+  // Villain bets large on river -> Polar
+  info.players[1].lastAction = Action(A_RAISE, 100);
+  info.players[1].folded = false;
+  // Pot is 100 before his raise? Actually pot is sum of wagers.
+  info.players[0].wager = 50; 
+  info.players[1].wager = 100; // Villain bet 100 into 50+50?
+  
+  ASSERT_EQUALS(RANGE_POLAR, getOpponentRangeType(info, 1));
+  
+  // Villain calls -> Linear
+  info.players[1].lastAction = Action(A_CALL);
+  ASSERT_EQUALS(RANGE_LINEAR, getOpponentRangeType(info, 1));
+
+  std::cout << "Opponent Polarity tests passed!" << std::endl << std::endl;
+}
+
 void doUnitTest()
 {
   std::cout << "Performing Unit Test" << std::endl << std::endl;
@@ -578,5 +627,8 @@ void doUnitTest()
   benchmarkEval7();
 
   testCardPrint();
+  
+  testHandBands();
+  testOpponentPolarity();
 
 }

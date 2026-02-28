@@ -66,39 +66,44 @@ torch::Tensor forward_with_history(torch::Tensor static_feat, torch::Tensor hist
 */
 struct PokerNetImpl : torch::nn::Module {
     torch::nn::Linear card_embedding{nullptr};
-    torch::nn::Linear action_embedding{nullptr}; // add this
+    torch::nn::Linear action_embedding{nullptr};
     torch::nn::LSTM rnn{nullptr};
     torch::nn::Linear opponent_context{nullptr};
     torch::nn::Linear action_head{nullptr}; 
 
-    PokerNetImpl(int input_size, int hidden_size) {
+    PokerNetImpl(int input_size = 23, int hidden_size = 128) {
+        // Static Features (0-22)
         card_embedding = register_module("card_embed", torch::nn::Linear(input_size, 64));
         
-        // this maps our 3 history features to the 64 LSTM input features
+        // History Sequence (3 features)
         action_embedding = register_module("action_embed", torch::nn::Linear(3, 64));
         
+        // RNN for History
         rnn = register_module("rnn", torch::nn::LSTM(torch::nn::LSTMOptions(64, hidden_size).num_layers(1)));
         
-        opponent_context = register_module("opp_ctx", torch::nn::Linear(10, 32));
-        action_head = register_module("action_head", torch::nn::Linear(hidden_size + 32 + 64, 2)); // update size: hidden + opp + static
+        // Opponent Stats (23-33 = 11 features)
+        opponent_context = register_module("opp_ctx", torch::nn::Linear(11, 32));
+        
+        // Final Head: 64 (static) + 128 (lstm) + 32 (opp) = 224
+        action_head = register_module("action_head", torch::nn::Linear(64 + hidden_size + 32, 2));
     }
 
     torch::Tensor forward_with_history(torch::Tensor static_feat, torch::Tensor history_seq, torch::Tensor opp_ctx) {
+        // Encode static state
         auto x_static = torch::relu(card_embedding(static_feat));
 
-        // 1. embed the history sequence
-        // history_seq is [seq_len, 1, 3] -> becomes [seq_len, 1, 64]
+        // Encode and process history sequence
         auto x_history = torch::relu(action_embedding(history_seq));
-
-        // 2. process through lstm
         auto rnn_output = rnn(x_history);
         auto last_hidden = std::get<0>(rnn_output)[-1]; 
 
+        // Encode opponent context
         auto x_opp = torch::relu(opponent_context(opp_ctx));
         
-        // concatenate static features, rnn history context, and opponent context
+        // Concatenate all branches
         auto combined = torch::cat({x_static, last_hidden, x_opp}, 1);
 
+        // Output (x, y) coordinates
         return action_head(combined);
     }
 };

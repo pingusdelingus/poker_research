@@ -68,22 +68,34 @@ Action AIRL::doTurn(const Info& info)
     hand_start_chips = static_cast<float>(info.getStack() + info.getWager());
     min_stack = static_cast<float>(info.getStack());
     agent_name = info.getYou().getName();
+    
+    // Identify opponent name
+    for (int i=0; i<info.getNumPlayers(); ++i) {
+        if (i != info.yourIndex) {
+            opp_tracker.name = info.players[i].name;
+            break;
+        }
+    }
   } else {
     min_stack = std::min(min_stack, static_cast<float>(info.getStack()));
   }
   last_wager = static_cast<float>(info.getWager());
 
-  // 1. forward pass through the graph rnn
-  torch::Tensor state = TensorConverter::infoToTensor(info);
+  // 1. Get current opponent features
+  std::vector<float> opp_feats = get_opponent_features();
+  
+  // 2. forward pass through the graph rnn
+  torch::Tensor state_full = TensorConverter::infoToTensor(info, opp_feats);
+  torch::Tensor state = state_full.slice(1, 0, 23); // Only the first 23 are static features
   torch::Tensor hist = history_to_tensor();
-  torch::Tensor opp = torch::zeros({1, 10});
-  torch::Tensor out_vec = net->forward_with_history(state, hist, opp);
+  torch::Tensor opp_tensor = torch::from_blob(opp_feats.data(), {1, 11}, torch::kFloat).clone();
+  torch::Tensor out_vec = net->forward_with_history(state, hist, opp_tensor);
 
-  // 2. stochastic exploration (reparameterization)
+  // 3. stochastic exploration (reparameterization)
   float noise_scale = 0.1f;
   auto sampled_vec = out_vec + torch::randn_like(out_vec) * noise_scale;
 
-  // 3. calculate log_prob for the policy gradient
+  // 4. calculate log_prob for the policy gradient
   auto log_prob = -0.5 * torch::pow((sampled_vec - out_vec) / noise_scale, 2).sum();
 
   hand_experiences.push_back({log_prob, static_cast<float>(info.getStack())});
@@ -104,6 +116,9 @@ Action AIRL::doTurn(const Info& info)
 
 
 void AIRL::onEvent(const Event& event) {
+    // Update opponent stats from events
+    update_opponent_stats(event);
+
     // Track betting history for LSTM input
     if (event.type == E_RAISE || event.type == E_CALL || event.type == E_CHECK || event.type == E_FOLD) {
         add_to_history((int)event.type, (float)event.chips / 100.0f, 0);
@@ -149,15 +164,12 @@ void AIRL::onEvent(const Event& event) {
             epoch_experiences.push_back({hand_log_prob_sum});
 
             // REINFORCE: loss = -sum(log_prob_i * advantage)
-            torch::Tensor loss = torch::zeros({1});
+            torch::Tensor loss = torch::zeros({1}, torch::TensorOptions().requires_grad(true));
             for (const auto& exp : hand_experiences) {
                 loss = loss - exp.log_prob * advantage;
             }
 
-            optimizer.zero_grad();
             loss.backward({}, /*retain_graph=*/true);
-            torch::nn::utils::clip_grad_norm_(net->parameters(), MAX_GRAD_NORM);
-            optimizer.step();
         }
 
         // Reset for new hand
@@ -169,6 +181,61 @@ void AIRL::onEvent(const Event& event) {
         min_stack = 0.0f;
         last_wager = 0.0f;
     }
+}
+
+void AIRL::update_opponent_stats(const Event& event) {
+    if (event.type == E_NEW_DEAL) {
+        if (opp_tracker.active_in_hand) {
+            opp_tracker.vpip_history.push_front(opp_tracker.current_hand_vpip ? 1 : 0);
+            opp_tracker.pfr_history.push_front(opp_tracker.current_hand_pfr ? 1 : 0);
+            if (opp_tracker.vpip_history.size() > 100) opp_tracker.vpip_history.pop_back();
+            if (opp_tracker.pfr_history.size() > 100) opp_tracker.pfr_history.pop_back();
+        }
+        opp_tracker.current_hand_vpip = false;
+        opp_tracker.current_hand_pfr = false;
+        opp_tracker.active_in_hand = false;
+    }
+
+    if (event.player == opp_tracker.name) {
+        opp_tracker.active_in_hand = true;
+        if (event.type == E_RAISE) {
+            opp_tracker.current_hand_vpip = true;
+            opp_tracker.current_hand_pfr = true;
+        } else if (event.type == E_CALL) {
+            opp_tracker.current_hand_vpip = true;
+        }
+    }
+}
+
+std::vector<float> AIRL::get_opponent_features() {
+    std::vector<float> feats(11, 0.5f); // 23-34 (11 items)
+
+    // 23: Assumed Range, 24: Seen Range, 25: Bucket (Placeholders)
+    feats[0] = 0.5f;
+    feats[1] = 0.5f;
+    feats[2] = 0.0f;
+
+    auto calc_rate = [](const std::deque<int>& history, size_t window) {
+        if (history.empty()) return 0.5f;
+        int count = 0;
+        size_t n = std::min(history.size(), window);
+        for (size_t i = 0; i < n; ++i) count += history[i];
+        return (float)count / (float)n;
+    };
+
+    // 26-29: VPIP 10/30/50/100
+    feats[3] = calc_rate(opp_tracker.vpip_history, 10);
+    feats[4] = calc_rate(opp_tracker.vpip_history, 30);
+    feats[5] = calc_rate(opp_tracker.vpip_history, 50);
+    feats[6] = calc_rate(opp_tracker.vpip_history, 100);
+
+    // 31-34: PFR 10/30/50/100
+    feats[7] = calc_rate(opp_tracker.pfr_history, 10);
+    feats[8] = calc_rate(opp_tracker.pfr_history, 30);
+    feats[9] = calc_rate(opp_tracker.pfr_history, 50);
+    feats[10] = calc_rate(opp_tracker.pfr_history, 100);
+
+    return feats;
 }
 
 void AIRL::applyEpochReward(float epoch_reward)
@@ -203,10 +270,7 @@ void AIRL::applyEpochReward(float epoch_reward)
     }
     loss = loss * (EPOCH_REWARD_WEIGHT / num_hands);
 
-    optimizer.zero_grad();
     loss.backward();
-    torch::nn::utils::clip_grad_norm_(net->parameters(), MAX_GRAD_NORM);
-    optimizer.step();
 
     epoch_experiences.clear();
 }

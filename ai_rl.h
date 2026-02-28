@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <deque>
 #include <algorithm>
 #include "info.h"
 #include "action.h"
@@ -28,10 +29,24 @@ public:
     void reset_history();
     void add_to_history(int cmd, float amt, int pos);
     torch::Tensor history_to_tensor();
+    
+    // Opponent Tracking
+    std::vector<float> get_opponent_features();
+    void update_opponent_stats(const Event& event);
 
 private:
     PokerNet& net;
     torch::optim::Optimizer& optimizer;
+
+    // Opponent Stats Tracking
+    struct OpponentTracker {
+        std::string name;
+        std::deque<int> vpip_history; // 1 = VPIP, 0 = No VPIP
+        std::deque<int> pfr_history;  // 1 = PFR, 0 = No PFR
+        bool current_hand_vpip = false;
+        bool current_hand_pfr = false;
+        bool active_in_hand = false; // Did opponent play this hand?
+    } opp_tracker;
 
     // LSTM history
     std::shared_ptr<ActionNode> history_head;

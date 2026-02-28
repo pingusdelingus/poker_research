@@ -19,11 +19,19 @@ struct ActionNode {
 
 class TensorConverter {
 public:
-    // 4 (Hole Cards) + 10 (Board) + 14 (Game State + Derived) = 28 Floats
-    static constexpr const int INPUT_SIZE = 28;
+    // 0-22: Static State (23 floats)
+    // 23-33: Opponent Stats & Metadata (11 floats)
+    static constexpr const int INPUT_SIZE = 34;
+    static constexpr const int STATIC_SIZE = 23;
+    static constexpr const int OPPONENT_SIZE = 11;
 
-    // Converts the game state (Info) into a [1, 28] Tensor for the NN
-    static torch::Tensor infoToTensor(const Info& info);
+    // Converts the game state (Info) + Opponent Stats into a [1, 34] Tensor
+    // opponent_stats expected to be size 11:
+    // [0-1]: Hand Ranges (Placeholders/Embeddings)
+    // [2]: Hand Bucket
+    // [3-6]: VPIP 10/30/50/100
+    // [7-10]: PFR 10/30/50/100
+    static torch::Tensor infoToTensor(const Info& info, const std::vector<float>& opponent_stats);
 
     // Converts an existing Action (from AISmart) into a Target Vector (x, y)
     // Used for Imitation Learning (Training Phase)

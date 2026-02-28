@@ -1,37 +1,10 @@
-/*
-OOPoker
-
-Copyright (c) 2010 Lode Vandevenne
-All rights reserved.
-
-This file is part of OOPoker.
-
-OOPoker is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-OOPoker is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with OOPoker.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
-OOPoker, or "Object Oriented Poker", is a C++ No-Limit Texas Hold'm engine meant
-to be used to implement poker AIs for entertainment  or research purposes. These
-AIs can be made to battle each other, or a single human can play against the AIs
-for his/her enjoyment.
-*/
-
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <iostream>
 #include <cstdlib>
+#include <fstream>
+#include <cstring>
 
 #include "genetic_trainer.h"
 #include "ai.h"
@@ -59,16 +32,34 @@ for his/her enjoyment.
 #include "table.h"
 #include "tools_terminal.h"
 #include "unittest.h"
-#include <torch/torch.h>
-#include "poker_net.h"
-#include "ai_rl.h"
+#include "rl_trainer.h"
 
-int main()
+int main(int argc, char** argv)
 {
     // Create logs directory
     system("mkdir -p ./logs/ga");
 
-    // Configure the genetic algorithm (paper Table 1)
+    // Check for CLI flag to run RL training
+    bool runRL = false;
+    bool runUT = false;
+    if (argc > 1 && strcmp(argv[1], "--rl") == 0) {
+        runRL = true;
+    }
+    if (argc > 1 && strcmp(argv[1], "--unittest") == 0) {
+        runUT = true;
+    }
+
+    if (runUT) {
+        doUnitTest();
+        return 0;
+    }
+
+    if (runRL) {
+        runRLTraining();
+        return 0;
+    }
+
+    // Default to Genetic Algorithm (dashboard branch behavior)
     GeneticTrainer::Config config;
     config.population_size       = 50;
     config.num_generations       = 250;
@@ -86,9 +77,6 @@ int main()
 
     // Create and run trainer
     GeneticTrainer trainer(config);
-
-    // Optional: resume from a saved population
-    // trainer.loadPopulation("./logs/ga/population_gen_100.bin");
 
     trainer.train();
 
