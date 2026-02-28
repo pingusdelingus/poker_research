@@ -39,11 +39,11 @@ int main(int argc, char** argv)
     // Create logs directory
     system("mkdir -p ./logs/ga");
 
-    // Check for CLI flag to run RL training
-    bool runRL = false;
+    // Parse CLI flags
+    bool runGA = false;
     bool runUT = false;
-    if (argc > 1 && strcmp(argv[1], "--rl") == 0) {
-        runRL = true;
+    if (argc > 1 && strcmp(argv[1], "--ga") == 0) {
+        runGA = true;
     }
     if (argc > 1 && strcmp(argv[1], "--unittest") == 0) {
         runUT = true;
@@ -54,31 +54,29 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    if (runRL) {
-        runRLTraining();
+    if (runGA) {
+        GeneticTrainer::Config config;
+        config.population_size       = 50;
+        config.num_generations       = 250;
+        config.hands_per_session     = 500;
+        config.survival_rate         = 0.30f;
+        config.mutation_rate_start   = 0.25f;
+        config.mutation_rate_end     = 0.05f;
+        config.mutation_strength_start = 0.50f;
+        config.mutation_strength_end   = 0.10f;
+        config.buy_in     = 1000;
+        config.big_blind  = 10;
+        config.small_blind = 5;
+        config.log_dir    = "./logs/ga/";
+        config.checkpoint_interval = 10;
+
+        GeneticTrainer trainer(config);
+        trainer.train();
         return 0;
     }
 
-    // Default to Genetic Algorithm (dashboard branch behavior)
-    GeneticTrainer::Config config;
-    config.population_size       = 50;
-    config.num_generations       = 250;
-    config.hands_per_session     = 500;
-    config.survival_rate         = 0.30f;
-    config.mutation_rate_start   = 0.25f;
-    config.mutation_rate_end     = 0.05f;
-    config.mutation_strength_start = 0.50f;
-    config.mutation_strength_end   = 0.10f;
-    config.buy_in     = 1000;
-    config.big_blind  = 10;
-    config.small_blind = 5;
-    config.log_dir    = "./logs/ga/";
-    config.checkpoint_interval = 10;
-
-    // Create and run trainer
-    GeneticTrainer trainer(config);
-
-    trainer.train();
+    // Default: RL training (REINFORCE with PokerNet)
+    runRLTraining();
 
     return 0;
 }

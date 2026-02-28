@@ -5,9 +5,9 @@
 #include <torch/torch.h>
 #include <cmath>
 
-AIRL::AIRL(PokerNet& n, torch::optim::Optimizer& opt, float buy_in_amount)
+AIRL::AIRL(PokerNet& n, torch::optim::Optimizer& opt, float buy_in_amount, float noise, float ent_coeff)
   : net(n), optimizer(opt),
-    buy_in(buy_in_amount),
+    buy_in(buy_in_amount), noise_scale(noise), entropy_coeff(ent_coeff),
     hand_start_chips(0.0f), min_stack(0.0f),
     last_wager(0.0f), last_action_cost(0.0f), total_won(0.0f),
     hand_complete(false),
@@ -92,13 +92,20 @@ Action AIRL::doTurn(const Info& info)
   torch::Tensor out_vec = net->forward_with_history(state, hist, opp_tensor);
 
   // 3. stochastic exploration (reparameterization)
-  float noise_scale = 0.1f;
-  auto sampled_vec = out_vec + torch::randn_like(out_vec) * noise_scale;
+  torch::Tensor sampled_vec;
+  torch::Tensor log_prob;
+  if (noise_scale > 1e-6f) {
+    sampled_vec = out_vec + torch::randn_like(out_vec) * noise_scale;
+    log_prob = -0.5 * torch::pow((sampled_vec - out_vec) / noise_scale, 2).sum();
+  } else {
+    sampled_vec = out_vec;
+    log_prob = torch::zeros({1});
+  }
 
-  // 4. calculate log_prob for the policy gradient
-  auto log_prob = -0.5 * torch::pow((sampled_vec - out_vec) / noise_scale, 2).sum();
+  // 4. entropy bonus: penalize large output magnitude (too decisive → stuck in one action zone)
+  auto entropy = -0.5f * out_vec.pow(2).sum();
 
-  hand_experiences.push_back({log_prob, static_cast<float>(info.getStack())});
+  hand_experiences.push_back({log_prob, entropy, static_cast<float>(info.getStack())});
 
   Action action = TensorConverter::vectorToAction(info, sampled_vec[0][0].item<float>(), sampled_vec[0][1].item<float>());
 
@@ -156,17 +163,19 @@ void AIRL::onEvent(const Event& event) {
             float advantage = reward - reward_baseline;
             reward_baseline = BASELINE_DECAY * reward_baseline + (1.0f - BASELINE_DECAY) * reward;
 
-            // Accumulate hand's summed log_prob for epoch-level reward
+            // Accumulate hand's summed log_prob and entropy for epoch-level reward
             torch::Tensor hand_log_prob_sum = torch::zeros({1});
+            torch::Tensor hand_entropy_sum = torch::zeros({1});
             for (const auto& exp : hand_experiences) {
                 hand_log_prob_sum = hand_log_prob_sum + exp.log_prob;
+                hand_entropy_sum = hand_entropy_sum + exp.entropy;
             }
-            epoch_experiences.push_back({hand_log_prob_sum});
+            epoch_experiences.push_back({hand_log_prob_sum, hand_entropy_sum});
 
-            // REINFORCE: loss = -sum(log_prob_i * advantage)
+            // REINFORCE: loss = -sum(log_prob_i * advantage) - entropy_coeff * sum(entropy_i)
             torch::Tensor loss = torch::zeros({1}, torch::TensorOptions().requires_grad(true));
             for (const auto& exp : hand_experiences) {
-                loss = loss - exp.log_prob * advantage;
+                loss = loss - exp.log_prob * advantage - entropy_coeff * exp.entropy;
             }
 
             loss.backward({}, /*retain_graph=*/true);
@@ -243,10 +252,12 @@ void AIRL::applyEpochReward(float epoch_reward)
     // Flush the last hand's log_probs (no E_NEW_DEAL follows the final hand)
     if (!hand_experiences.empty() && hand_experiences[0].log_prob.requires_grad()) {
         torch::Tensor hand_log_prob_sum = torch::zeros({1});
+        torch::Tensor hand_entropy_sum = torch::zeros({1});
         for (const auto& exp : hand_experiences) {
             hand_log_prob_sum = hand_log_prob_sum + exp.log_prob;
+            hand_entropy_sum = hand_entropy_sum + exp.entropy;
         }
-        epoch_experiences.push_back({hand_log_prob_sum});
+        epoch_experiences.push_back({hand_log_prob_sum, hand_entropy_sum});
     }
 
     if (epoch_experiences.empty()) return;
@@ -266,7 +277,7 @@ void AIRL::applyEpochReward(float epoch_reward)
     float num_hands = static_cast<float>(epoch_experiences.size());
     torch::Tensor loss = torch::zeros({1});
     for (const auto& exp : epoch_experiences) {
-        loss = loss - exp.log_prob * epoch_advantage;
+        loss = loss - exp.log_prob * epoch_advantage - entropy_coeff * exp.entropy_sum;
     }
     loss = loss * (EPOCH_REWARD_WEIGHT / num_hands);
 

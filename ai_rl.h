@@ -13,7 +13,7 @@
 
 class AIRL: public AI {
 public:
-    AIRL(PokerNet& n, torch::optim::Optimizer& opt, float buy_in = 1000.0f);
+    AIRL(PokerNet& n, torch::optim::Optimizer& opt, float buy_in = 1000.0f, float noise = 0.5f, float entropy_coeff = 0.001f);
 
     // --- Overrides for the AI Interface ---
     Action doTurn(const Info& info) override;
@@ -54,16 +54,22 @@ private:
     torch::Tensor h_state;
     torch::Tensor c_state;
 
+    // Exploration noise and entropy coefficient (both decay over training)
+    float noise_scale;
+    float entropy_coeff;
+
     // Per-decision experience buffer (cleared each hand)
     struct Experience {
         torch::Tensor log_prob;
+        torch::Tensor entropy;
         float stack;
     };
     std::vector<Experience> hand_experiences;
 
     // Per-epoch experience buffer (accumulates across all hands)
     struct EpochExperience {
-        torch::Tensor log_prob; // summed log_prob for the hand
+        torch::Tensor log_prob;    // summed log_prob for the hand
+        torch::Tensor entropy_sum; // summed entropy for the hand
     };
     std::vector<EpochExperience> epoch_experiences;
 
