@@ -35,6 +35,11 @@ The game state is converted into a flat tensor of 34 normalized floats via `Tens
 | 32 | pfr30  | preflop raising rate| 
 | 33 | pfr50  | preflop raising rate| 
 | 34 | pfr100  | preflop raising rate| 
+| 35 | dontbet10 | dont bet rate | 
+| 36 | dontbet30 | dont bet rate | 
+| 37 | dontbet50 | dont bet rate | 
+| 38 | dontbet100 | dont bet rate | 
+
 
 
 > **Note:** Active players (index 22) is included to support future expansion beyond heads-up play. In the current heads-up training mode this value is always 2/9 (~0.22), but it will become meaningful if the model is trained or deployed in multi-player games.
