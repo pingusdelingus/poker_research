@@ -35,7 +35,7 @@ void runRLTraining()
 {
     system("mkdir -p ./logs/rl");
 
-    PokerNet global_net(23, 128);
+    PokerNet global_net(25, 128);
     float lr_start = 1e-3f;
     float lr_end = 1e-4f;
     torch::optim::Adam optimizer(global_net->parameters(), lr_start);
@@ -110,7 +110,7 @@ void runRLTraining()
         }
 
         game.doGame();
-e
+        
         float agent_stack = static_cast<float>(game.getFinalStack("RL_Agent"));
         float opp_stack = (distillation_complete) ? static_cast<float>(game.getFinalStack("Opponent")) : static_cast<float>(game.getFinalStack(agent2->getAIName()));
 

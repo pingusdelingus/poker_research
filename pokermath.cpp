@@ -452,36 +452,88 @@ HandBand getHandBand(const std::vector<Card> &holeCards,
     return HB_AIR;
 }
 
-void updateHandBandBeleif (const std::vector<Card> & boardCards,
-                           const std::vector<Card>& myCards)
+std::vector<float> getOpponentHandBandProbabilities(
+    const std::vector<Card>& boardCards, 
+    const std::vector<float>& comboWeights1326)
 {
-//    float agressionFactor = getAF(boardCards);
-    HandBand  h =getHandBand(boardCards, myCards);
-    
-    
-    switch( h){
-      
-    case HB_AIR:
-       std::cout << "air w no redraw\n" ;
-    case HB_DRAW_WEAK:
-       std::cout << "air w no redraw\n" ;
-              
+    // HandBand has 7 elements: AIR=0 to NUTS=6
+    std::vector<float> bucketProbs(7, 0.0f);
+    float totalWeight = 0.0f;
 
-    case HB_DRAW_STRONG:
-       std::cout << "air w no redraw\n" ;
-    case HB_MADE_MEDIUM: 
-       std::cout << "air w no redraw\n" ;
+    bool boardHas[52] = {false};
+    for(const auto& c : boardCards) {
+        if(c.isValid()) boardHas[c.getIndex()] = true;
+    }
 
-    // we want to select the weak hands and remove them for our oppornets range
-    //   
+    int idx = 0;
+    for(int c1 = 0; c1 < 51; c1++) {
+        for(int c2 = c1 + 1; c2 < 52; c2++) {
+            float weight = comboWeights1326[idx];
+            if (weight > 0.0f && !boardHas[c1] && !boardHas[c2]) {
+                std::vector<Card> hole = {Card(c1), Card(c2)};
+                HandBand hb = getHandBand(hole, boardCards);
+                int b = (int)hb;
+                if (b >= 0 && b <= 6) {
+                    bucketProbs[b] += weight;
+                    totalWeight += weight;
+                }
+            }
+            idx++;
+        }
+    }
 
+    if (totalWeight > 0.0001f) {
+        for(int i = 0; i < 7; i++) bucketProbs[i] /= totalWeight;
+    } else {
+        // Fallback: mostly air
+        bucketProbs[0] = 1.0f;
+    }
+    return bucketProbs;
+}
 
-  } 
-    
-     
+void updateOpponentRange(
+    std::vector<float>& comboWeights1326, 
+    const std::vector<Card>& boardCards, 
+    int actionCommand) 
+{
+    bool boardHas[52] = {false};
+    for(const auto& c : boardCards) {
+        if(c.isValid()) boardHas[c.getIndex()] = true;
+    }
 
+    int idx = 0;
+    for(int c1 = 0; c1 < 51; c1++) {
+        for(int c2 = c1 + 1; c2 < 52; c2++) {
+            if (comboWeights1326[idx] > 0.0f && !boardHas[c1] && !boardHas[c2]) {
+                std::vector<Card> hole = {Card(c1), Card(c2)};
+                HandBand hb = getHandBand(hole, boardCards);
+                
+                // Bayesian-lite update factors
+                if (actionCommand == 2) { // A_RAISE
+                    if (hb == HB_AIR) comboWeights1326[idx] *= 0.1f;
+                    else if (hb == HB_DRAW_WEAK) comboWeights1326[idx] *= 0.3f;
+                    else if (hb == HB_MADE_WEAK) comboWeights1326[idx] *= 0.2f;
+                    else if (hb >= HB_MADE_STRONG) comboWeights1326[idx] *= 1.5f;
+                } else if (actionCommand == 1 || actionCommand == 0) { // A_CALL or A_CHECK
+                    if (hb >= HB_MADE_STRONG) comboWeights1326[idx] *= 0.5f; // would usually raise
+                    else if (hb == HB_DRAW_STRONG) comboWeights1326[idx] *= 1.2f;
+                    else if (hb == HB_DRAW_WEAK) comboWeights1326[idx] *= 1.1f;
+                    else if (hb == HB_MADE_MEDIUM) comboWeights1326[idx] *= 1.2f;
+                }
+            }
+            idx++;
+        }
+    }
 
-}// end of updateHandBandBeleif
+    // Prevent floating point infinity by re-normalizing weights
+    float tw = 0.0f;
+    for (float w : comboWeights1326) tw += w;
+    if (tw > 1e-9f) {
+        for (float& w : comboWeights1326) w /= tw;
+    } else {
+        std::fill(comboWeights1326.begin(), comboWeights1326.end(), 1.0f/1326.0f);
+    }
+}
 
 
 

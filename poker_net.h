@@ -71,8 +71,8 @@ struct PokerNetImpl : torch::nn::Module {
     torch::nn::Linear opponent_context{nullptr};
     torch::nn::Linear action_head{nullptr}; 
 
-    PokerNetImpl(int input_size = 26, int hidden_size = 128) {
-        // Static Features (0-22)
+    PokerNetImpl(int input_size = 25, int hidden_size = 128) {
+        // Static Features (0-24)
         card_embedding = register_module("card_embed", torch::nn::Linear(input_size, 64));
         
         // History Sequence (3 features)
@@ -81,19 +81,21 @@ struct PokerNetImpl : torch::nn::Module {
         // RNN for History
         rnn = register_module("rnn", torch::nn::LSTM(torch::nn::LSTMOptions(64, hidden_size).num_layers(1)));
         
-        // Opponent Stats (indices 23-37 = 15 features)
-        opponent_context = register_module("opp_ctx", torch::nn::Linear(15, 32));
+        // Opponent Stats (indices 25-46 = 22 features)
+        opponent_context = register_module("opp_ctx", torch::nn::Linear(22, 32));
         
         // Final Head: 64 (static embed) + 128 (lstm) + 32 (opp embed) = 224
-        action_head = register_module("action_head", torch::nn::Linear(64 + hidden_size + 32, 2));
+        // Outputs: 3 logits for (Fold, Call, Raise) + 1 scalar for action sizing = 4 features
+        action_head = register_module("action_head", torch::nn::Linear(64 + hidden_size + 32, 4));
 
-        // Initialize weights to small values to start near (1,0) in action space
+        // Initialize outputs (small standard deviation)
         {
             torch::NoGradGuard no_grad;
             torch::nn::init::normal_(action_head->weight, 0.0, 0.01);
-            // Start at (1, 0) - Center of Fold sector
-            action_head->bias.index_put_({0}, 1.0);
-            action_head->bias.index_put_({1}, 0.0);
+            // Default to slightly favoring Call/Checking
+            torch::nn::init::constant_(action_head->bias, 0.0);
+            action_head->bias[1] = 0.5;
+            action_head->bias[2] = -0.5;
         }
     }
 

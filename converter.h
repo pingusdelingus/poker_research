@@ -19,27 +19,17 @@ struct ActionNode {
 
 class TensorConverter {
 public:
-    // 0-25: Static State (26 floats)
-    // 26-40: Opponent Stats & Metadata (15 floats)
-    static constexpr const int INPUT_SIZE = 41;
-    static constexpr const int STATIC_SIZE = 26;
-    static constexpr const int OPPONENT_SIZE = 15;
+    // 0-24: Static State (25 floats)
+    // 25-46: Opponent Stats & Metadata (22 floats)
+    static constexpr const int INPUT_SIZE = 47;
+    static constexpr const int STATIC_SIZE = 25;
+    static constexpr const int OPPONENT_SIZE = 22;
 
-    // Converts the game state (Info) + Opponent Stats into a [1, 34] Tensor
-    // opponent_stats expected to be size 11:
-    // [0-1]: Hand Ranges (Placeholders/Embeddings)
-    // [2]: Hand Bucket
-    // [3-6]: VPIP 10/30/50/100
-    // [7-10]: PFR 10/30/50/100
+    // Converts the game state (Info) + Opponent Stats into a [1, INPUT_SIZE] Tensor
     static torch::Tensor infoToTensor(const Info& info, const std::vector<float>& opponent_stats);
 
-    // Converts an existing Action (from AISmart) into a Target Vector (x, y)
-    // Used for Imitation Learning (Training Phase)
-    static torch::Tensor actionToTarget(const Action& action, const Info& info);
-
-    // Converts the NN's Output Vector (x, y) back into a valid Poker Action
-    // Used for Gameplay (Inference Phase)
-    static Action vectorToAction(const Info& info, float x, float y);
+    // Converts the NN's sampled action index and scalar sizing back into a valid Poker Action
+    static Action logitsToAction(const Info& info, int action_idx, float sizing);
 
 private:
     // Helper to normalize card ranks (2-14 -> 0-1) and suits (0-3 -> 0-1)

@@ -1,8 +1,8 @@
 # PokerNet Model Card
 
-## Input Features (Static State Vector) — 34 floats
+## Input Features (Static State Vector) — 47 floats
 
-The game state is converted into a flat tensor of 34 normalized floats via `TensorConverter::infoToTensor()` in `converter.cpp`.
+The game state is converted into a flat tensor of 47 normalized floats via `TensorConverter::infoToTensor()` in `converter.cpp`.
 
 | Index | Feature | Normalization |
 |-------|---------|---------------|
@@ -22,19 +22,17 @@ The game state is converted into a flat tensor of 34 normalized floats via `Tens
 | 18 | Table position | position / (num_players - 1) |
 | 19 | Pot equity | raw float (0.0 - 1.0) |
 | 20 | Pot odds percentage | raw float (0.0 - 1.0) |
-| 21 | M-Ratio | m_ratio / 50 | # what is this
+| 21 | M-Ratio | m_ratio / 50 | 
 | 22 | Active players | num_active / 9 |
-| 23 |  Assumed Opponent Hand Range | 13x13 matrix of softmaxe'd ins | 
-| 24 |  Seen Opponent Hand Range (showdown ) | 13x13 matrix of softmaxe'd ins | # might be useless |
-| 25 |  Opponent Hand Bucket | 3 or 4 enumerations |
-| 26 | Vpip 10 | voluntarily put (money) into pot |
-| 27 | Vpip 30 | voluntarily put (money) into pot | 
-| 28 | Vpip 50 | voluntarily put (money) into pot | 
-| 29 | Vpip 100 | voluntarily put (money) into pot| 
-| 31 | pfr10  | preflop raising rate| 
-| 32 | pfr30  | preflop raising rate| 
-| 33 | pfr50  | preflop raising rate| 
-| 34 | pfr100  | preflop raising rate| 
+| 23 | Board Texture | 0-1 mapped enumerated types |
+| 24 | Opponent Range Type | 0-1 mapped enumerated types |
+| 25-31| Opponent HandBand Probabilities | 7 probability floats (mapped from 1326 combination tracking) |
+| 32 | Hand VPIP (Live) | 1.0 if voluntarily put money in pot during current hand |
+| 33 | Hand PFR (Live) | 1.0 if raised preflop during current hand |
+| 34 | History is Empty | 1.0 if no prior betting action on street |
+| 35-38| Vpip 10/30/50/100 | voluntarily put (money) into pot moving averages | 
+| 39-42| Pfr 10/30/50/100 | preflop raising rate moving averages | 
+| 43-46| Donk 10/30/50/100 | donk betting rate moving averages | 
 
 
 > **Note:** Active players (index 22) is included to support future expansion beyond heads-up play. In the current heads-up training mode this value is always 2/9 (~0.22), but it will become meaningful if the model is trained or deployed in multi-player games.
@@ -51,17 +49,17 @@ Betting history within the current hand is tracked as a linked list of `ActionNo
 
 ## Architecture (PokerNet)
 
-Defined in `poker_net.h`. Constructed with `PokerNet(input_size=23, hidden_size=128)`.
+Defined in `poker_net.h`. Constructed with `PokerNet(input_size=25, hidden_size=128)`.
 
 ```mermaid
 graph TD
     %% Inputs
-    S["Static State<br/><b>[1, 23]</b>"]
+    S["Static State<br/><b>[1, 25]</b>"]
     H["History Sequence<br/><b>[seq_len, 1, 3]</b>"]
-    O["Opponent Stats<br/><b>[1, 10]</b>"]
+    O["Opponent Stats<br/><b>[1, 22]</b>"]
 
     %% Static branch
-    S --> CE["card_embedding<br/>Linear(23 → 64) + ReLU"]
+    S --> CE["card_embedding<br/>Linear(25 → 64) + ReLU"]
     CE --> XS["x_static<br/><b>[1, 64]</b>"]
 
     %% History branch
@@ -71,7 +69,7 @@ graph TD
     LSTM --> LH["last_hidden<br/><b>[1, 128]</b>"]
 
     %% Opponent branch
-    O --> OC["opponent_context<br/>Linear(10 → 32) + ReLU"]
+    O --> OC["opponent_context<br/>Linear(22 → 32) + ReLU"]
     OC --> XO["x_opp<br/><b>[1, 32]</b>"]
 
     %% Concatenation
@@ -81,8 +79,8 @@ graph TD
     CAT --> COMB["combined<br/><b>[1, 224]</b>"]
 
     %% Output
-    COMB --> AH["action_head<br/>Linear(224 → 2)"]
-    AH --> OUT["Output (x, y)<br/><b>[1, 2]</b>"]
+    COMB --> AH["action_head<br/>Linear(224 → 4)"]
+    AH --> OUT["Output (3 Action Logits, 1 Sizing Scalar)<br/><b>[1, 4]</b>"]
 
     %% Styling
     style S fill:#4a90d9,stroke:#2c5f8a,color:#fff
@@ -92,7 +90,7 @@ graph TD
     style CAT fill:#f39c12,stroke:#c87f0a,color:#fff
 ```
 
-**Total trainable parameters**: ~47k
+**Total trainable parameters**: ~48k
 
 ## Training
 

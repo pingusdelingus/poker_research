@@ -21,7 +21,7 @@ void CheckpointManager::run_evaluation(PokerNet& net, int epoch, ObserverDashboa
 
     torch::optim::Adam dummy_opt(net->parameters(), 1e-4);
 
-    AIRL* test_bot = new AIRL(net, dummy_opt);
+    AIRL* test_bot = new AIRL(net, dummy_opt, 1000.0f, /*noise=*/0.0f, /*ent_coeff=*/0.0f);
     AISmart* baseline = new AISmart(0.5);
 
     eval_game.addPlayer(Player(test_bot, "EvalBot"));

@@ -19,7 +19,7 @@ float normalize(int value, int big_blind)
 torch::Tensor TensorConverter::infoToTensor(const Info& info, const std::vector<float>& opponent_stats)
 {
   std::vector<float> features;
-  // total size: 23 (Static) + 15 (Opponent) = 38
+  // total size: 25 (Static) + 22 (Opponent) = 47
   features.reserve(INPUT_SIZE);
 
   int bb = info.getBigBlind();
@@ -64,15 +64,11 @@ torch::Tensor TensorConverter::infoToTensor(const Info& info, const std::vector<
   features.push_back((float)info.getMRatio() / 50.0f);                                    // [21] m-ratio
   features.push_back((float)info.getNumActivePlayers() / 9.0f);                           // [22] active players
 
-  // 23: Hand Band (normalized 0-1)
-  HandBand hb = getHandBand(hole, board);
-  features.push_back((float)hb / 6.0f); // 0-6 range
-
-  // 24: Board Texture (normalized 0-1)
+  // 23: Board Texture (normalized 0-1)
   BoardTexture bt = getBoardTexture(board);
   features.push_back((float)bt / 6.0f); // 0-6 range
 
-  // 25: Opponent Range Type (normalized 0-1)
+  // 24: Opponent Range Type (normalized 0-1)
   int oppIdx = (info.yourIndex == 0) ? 1 : 0;
   if (info.getNumPlayers() > 2) {
       // Find first active opponent that is not you
@@ -96,52 +92,25 @@ torch::Tensor TensorConverter::infoToTensor(const Info& info, const std::vector<
   return torch::from_blob(features.data(), {1, INPUT_SIZE}, torch::kFloat).clone();
 } // end of infototensor
 
-torch::Tensor TensorConverter::actionToTarget(const Action& action, const Info& info)
+Action TensorConverter::logitsToAction(const Info& info, int action_idx, float sizing)
 {
-  float x = 0.0f, y = 0.0f;
-
-  // Symmetric sectors: Fold (Right), Call (Top-Left), Raise (Bottom-Left)
-  switch (action.command)
-  {
-    case A_FOLD:
-      x = 1.0f; y = 0.0f; // Center of Right sector (Angle 0)
-      break;
-    case A_CHECK:
-    case A_CALL:
-      x = -0.5f; y = 0.866f; // Center of Top-Left sector (Angle 2pi/3)
-      break;
-    case A_RAISE:
-      x = -0.5f; y = -0.866f; // Center of Bottom-Left sector (Angle -2pi/3)
-      break;
-  }
-
-  float target[] = {x, y};
-  return torch::from_blob(target, {1, 2}, torch::kFloat).clone();
-} // end of actiontotarget
-
-Action TensorConverter::vectorToAction(const Info& info, float x, float y)
-{
-  float angle = std::atan2(y, x);
-  float magnitude = std::sqrt(x*x + y*y);
-
-  // Sector boundaries: pi/3 (60 deg) and -pi/3 (-60 deg)
+  // 0: Fold/Check
+  // 1: Call
+  // 2: Raise
   
-  // 1. Fold Zone: [-pi/3, pi/3] (Right)
-  if (angle >= -pi/3 && angle <= pi/3)
+  if (action_idx == 0)
   {
     return info.getCheckFoldAction();
   }
   
-  // 2. Call Zone: [pi/3, pi] or [-pi, -pi] (Top-Leftish)
-  // We'll split the rest at the -pi/3 boundary
-  if (angle > pi/3)
+  if (action_idx == 1)
   {
     return info.getCallAction();
   }
 
-  // 3. Raise Zone: [-pi, -pi/3] (Bottom-Leftish)
-  // map magnitude to a stack percentage
-  double strength = 1.0 / (1.0 + std::exp(-magnitude)); 
+  // Raise Action
+  // map continuous sizing parameter to a percentage of the remaining max stack using sigmoid
+  double strength = 1.0 / (1.0 + std::exp(-sizing)); 
   
   int min_r = info.getMinChipsToRaise();
   int max_r = info.getStack();
@@ -150,4 +119,4 @@ Action TensorConverter::vectorToAction(const Info& info, float x, float y)
 
   int amount = min_r + (int)((max_r - min_r) * strength);
   return info.amountToAction(amount);
-} // end of vectortoaction
+} // end of logitsToAction

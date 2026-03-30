@@ -52,17 +52,18 @@ private:
         bool current_hand_donk = false;
         bool active_in_hand = false; // Did opponent play this hand?
 
-        // Hand Ranges: 13x13 matrices
-        std::vector<float> assumed_range; // 169 floats
-        std::vector<float> seen_range;    // 169 floats
+        // Hand Ranges: 1326 combinations
+        std::vector<float> assumed_range; // 1326 floats
+        std::vector<float> seen_range;    // 1326 floats
         int hand_bucket = 0;
 
-        OpponentTracker() : assumed_range(169, 1.0f/169.0f), seen_range(169, 0.0f) {}
+        OpponentTracker() : assumed_range(1326, 1.0f/1326.0f), seen_range(1326, 0.0f) {}
     } opp_tracker;
 
     // Last street aggressor (for donk bet detection)
     std::string last_street_aggressor;
     Round current_round_tracker = R_PRE_FLOP;
+    std::vector<Card> current_board;
 
     // LSTM history
     std::shared_ptr<ActionNode> history_head;

@@ -70,6 +70,17 @@ enum BoardTexture {
 HandBand getHandBand(const std::vector<Card> &holeCards,
                      const std::vector<Card> &boardCards);
 
+// Returns a 7-element probability vector over HandBands (HB_AIR to HB_MADE_NUTS)
+std::vector<float> getOpponentHandBandProbabilities(
+    const std::vector<Card>& boardCards, 
+    const std::vector<float>& comboWeights1326);
+
+// Updates the 1326-element opponent range array based on opponent action
+void updateOpponentRange(
+    std::vector<float>& comboWeights1326, 
+    const std::vector<Card>& boardCards, 
+    int actionCommand);
+
 // returns the board texture for a given set of board cards
 BoardTexture getBoardTexture(const std::vector<Card> &boardCards);
 

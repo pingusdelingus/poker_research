@@ -2,6 +2,7 @@
 #include "converter.h"
 #include "info.h"
 #include "event.h"
+#include "pokermath.h"
 #include <torch/torch.h>
 #include <cmath>
 
@@ -99,28 +100,53 @@ Action AIRL::doTurn(const Info& info)
   torch::Tensor hist = history_to_tensor();
   torch::Tensor out_vec = net->forward_with_history(static_part, hist, opp_part);
 
-  // 3. stochastic exploration (reparameterization)
-  torch::Tensor sampled_vec;
-  torch::Tensor log_prob;
-  if (noise_scale > 1e-6f) {
-    torch::Tensor noise = torch::randn_like(out_vec) * noise_scale;
-    sampled_vec = out_vec + noise;
-    
-    // REINFORCE: log_prob of the *chosen action* (sampled_vec) under current policy (out_vec)
-    // We MUST detach sampled_vec so it's treated as a fixed action, otherwise the gradient is zero.
-    torch::Tensor fixed_action = sampled_vec.detach();
-    log_prob = -0.5 * torch::pow((fixed_action - out_vec) / noise_scale, 2).sum();
+  // 3. stochastic exploration (reparameterization / discrete sampling)
+  torch::Tensor logits = out_vec.slice(1, 0, 3);
+  torch::Tensor sizing = out_vec.slice(1, 3, 4);
+
+  // Clamp logits to prevent softmax overflow/underflow (e.g. after a large raise squeezes one class)
+  logits = torch::clamp(logits, -10.0f, 10.0f);
+
+  // Discrete action probability
+  torch::Tensor probs = torch::softmax(logits, 1);
+  torch::Tensor log_probs = torch::log_softmax(logits, 1);
+
+  // Safety clamp on probs before multinomial - avoids 0-probability elements causing NaN
+  probs = torch::clamp(probs, 1e-6f, 1.0f);
+  // Re-renormalize so they sum to 1 after clamping
+  probs = probs / probs.sum(1, true);
+
+  // Sample action
+  torch::Tensor action_idx;
+  if (noise_scale > 1e-6f) { // training
+      action_idx = torch::multinomial(probs, 1);
   } else {
-    sampled_vec = out_vec;
-    log_prob = torch::zeros({1});
+      action_idx = torch::argmax(probs, 1, true);
   }
 
-  // 4. entropy bonus: penalize large output magnitude (too decisive → stuck in one action zone)
-  auto entropy = -0.5f * out_vec.pow(2).sum();
+  // Explore sizing
+  torch::Tensor sampled_sizing;
+  if (noise_scale > 1e-6f) {
+      torch::Tensor noise = torch::randn_like(sizing) * noise_scale;
+      sampled_sizing = sizing + noise;
+  } else {
+      sampled_sizing = sizing;
+  }
 
-  hand_experiences.push_back({log_prob, entropy, state, static_cast<float>(info.getStack())});
+  // Selected action log_prob 
+  torch::Tensor chosen_log_prob = log_probs[0][action_idx[0].item<int64_t>()].unsqueeze(0);
+  if (action_idx[0].item<int64_t>() == 2) { // RAISE
+      torch::Tensor p_sz = -0.5f * torch::pow((sampled_sizing.detach() - sizing) / noise_scale, 2).sum();
+      chosen_log_prob = chosen_log_prob + p_sz;
+  }
 
-  Action action = TensorConverter::vectorToAction(info, sampled_vec[0][0].item<float>(), sampled_vec[0][1].item<float>());
+  // 4. entropy bonus: - sum( p * log(p) ) for discrete
+  // Using probs + 1e-8 avoids 0 * -inf producing NaN
+  auto entropy = -(probs * torch::log(probs + 1e-8f)).sum();
+
+  hand_experiences.push_back({chosen_log_prob, entropy, state, static_cast<float>(info.getStack())});
+
+  Action action = TensorConverter::logitsToAction(info, action_idx[0].item<int64_t>(), sampled_sizing[0][0].item<float>());
 
   // Track VPIP (Voluntarily Put Money In Pot)
   if (action.command == A_RAISE || (action.command == A_CALL && info.getCallAmount() > 0)) {
@@ -141,6 +167,18 @@ Action AIRL::doTurn(const Info& info)
 
 
 void AIRL::onEvent(const Event& event) {
+    if (event.type == E_NEW_DEAL) {
+        current_board.clear();
+    } else if (event.type == E_FLOP) {
+        current_board.push_back(event.card1);
+        current_board.push_back(event.card2);
+        current_board.push_back(event.card3);
+    } else if (event.type == E_TURN) {
+        current_board.push_back(event.card4);
+    } else if (event.type == E_RIVER) {
+        current_board.push_back(event.card5);
+    }
+
     // Update opponent stats from events
     update_opponent_stats(event);
 
@@ -234,6 +272,7 @@ void AIRL::onEvent(const Event& event) {
 
 void AIRL::update_opponent_stats(const Event& event) {
     if (event.type == E_NEW_DEAL) {
+        std::fill(opp_tracker.assumed_range.begin(), opp_tracker.assumed_range.end(), 1.0f/1326.0f);
         if (opp_tracker.active_in_hand) {
             opp_tracker.vpip_history.push_front(opp_tracker.current_hand_vpip ? 1 : 0);
             opp_tracker.pfr_history.push_front(opp_tracker.current_hand_pfr ? 1 : 0);
@@ -250,6 +289,15 @@ void AIRL::update_opponent_stats(const Event& event) {
 
     if (event.player == opp_tracker.name) {
         opp_tracker.active_in_hand = true;
+
+        if (event.type == E_RAISE) {
+            updateOpponentRange(opp_tracker.assumed_range, current_board, 2); // 2 is RAISE
+        } else if (event.type == E_CALL) {
+            updateOpponentRange(opp_tracker.assumed_range, current_board, 1); // 1 is CALL
+        } else if (event.type == E_CHECK) {
+            updateOpponentRange(opp_tracker.assumed_range, current_board, 0); // 0 is CHECK
+        }
+
         if (current_round_tracker == R_PRE_FLOP) {
             if (event.type == E_RAISE) {
                 opp_tracker.current_hand_vpip = true;
@@ -278,12 +326,17 @@ void AIRL::update_opponent_stats(const Event& event) {
     }
 }
 std::vector<float> AIRL::get_opponent_features() {
-    std::vector<float> feats(15, 0.5f); // 23-38 (15 items)
+    std::vector<float> feats;
+    feats.reserve(TensorConverter::OPPONENT_SIZE);
 
-    // 23: Hand VPIP (Live), 24: Hand PFR (Live), 25: History Is Empty
-    feats[0] = opp_tracker.current_hand_vpip ? 1.0f : 0.0f;
-    feats[1] = opp_tracker.current_hand_pfr ? 1.0f : 0.0f;
-    feats[2] = (history_head == nullptr) ? 1.0f : 0.0f;
+    // 0-6: HandBand Probs from 1326 tracking array
+    auto probs = getOpponentHandBandProbabilities(current_board, opp_tracker.assumed_range);
+    feats.insert(feats.end(), probs.begin(), probs.end());
+
+    // 7: Hand VPIP (Live), 8: Hand PFR (Live), 9: History Is Empty
+    feats.push_back(opp_tracker.current_hand_vpip ? 1.0f : 0.0f);
+    feats.push_back(opp_tracker.current_hand_pfr ? 1.0f : 0.0f);
+    feats.push_back((history_head == nullptr) ? 1.0f : 0.0f);
 
     auto calc_rate = [](const std::deque<int>& history, size_t window) {
         if (history.empty()) return 0.5f;
@@ -293,24 +346,23 @@ std::vector<float> AIRL::get_opponent_features() {
         return (float)count / (float)n;
     };
 
-    // 26-29: VPIP 10/30/50/100
-    feats[3] = calc_rate(opp_tracker.vpip_history, 10);
-    feats[4] = calc_rate(opp_tracker.vpip_history, 30);
-    feats[5] = calc_rate(opp_tracker.vpip_history, 50);
-    feats[6] = calc_rate(opp_tracker.vpip_history, 100);
+    // 10-13: VPIP 10/30/50/100
+    feats.push_back(calc_rate(opp_tracker.vpip_history, 10));
+    feats.push_back(calc_rate(opp_tracker.vpip_history, 30));
+    feats.push_back(calc_rate(opp_tracker.vpip_history, 50));
+    feats.push_back(calc_rate(opp_tracker.vpip_history, 100));
 
-    // (Index 30 is missing in user list, so 31-34 follow)
-    // 31-34: PFR 10/30/50/100
-    feats[7] = calc_rate(opp_tracker.pfr_history, 10);
-    feats[8] = calc_rate(opp_tracker.pfr_history, 30);
-    feats[9] = calc_rate(opp_tracker.pfr_history, 50);
-    feats[10] = calc_rate(opp_tracker.pfr_history, 100);
+    // 14-17: PFR 10/30/50/100
+    feats.push_back(calc_rate(opp_tracker.pfr_history, 10));
+    feats.push_back(calc_rate(opp_tracker.pfr_history, 30));
+    feats.push_back(calc_rate(opp_tracker.pfr_history, 50));
+    feats.push_back(calc_rate(opp_tracker.pfr_history, 100));
 
-    // 35-38: Donk 10/30/50/100
-    feats[11] = calc_rate(opp_tracker.donk_history, 10);
-    feats[12] = calc_rate(opp_tracker.donk_history, 30);
-    feats[13] = calc_rate(opp_tracker.donk_history, 50);
-    feats[14] = calc_rate(opp_tracker.donk_history, 100);
+    // 18-21: Donk 10/30/50/100
+    feats.push_back(calc_rate(opp_tracker.donk_history, 10));
+    feats.push_back(calc_rate(opp_tracker.donk_history, 30));
+    feats.push_back(calc_rate(opp_tracker.donk_history, 50));
+    feats.push_back(calc_rate(opp_tracker.donk_history, 100));
 
     return feats;
 }
