@@ -17,17 +17,23 @@ public:
     void init(int total_epochs, int hands_per_epoch);
 
     // Called at start of each epoch
-    void beginEpoch(int epoch);
+    void beginEpoch(int epoch, float lr = 0.0f, float noise = 0.0f);
+
+    void setPhase(const std::string& phase, const std::string& opponent);
 
     // Called after epoch game completes
     void endEpoch(float agent_stack, float opponent_stack,
-                  float loss_value, float learning_rate, float noise_scale);
+                  float loss_value, float learning_rate, float noise_scale,
+                  const std::vector<std::pair<int, float>>& saliency = {});
 
     // Called after checkpoint evaluation
     void addEvalResult(int epoch, float eval_stack);
 
     // Render the dashboard
     void render();
+
+    // Log metrics to a CSV file
+    void logMetrics();
 
 private:
     int total_epochs;
@@ -44,6 +50,9 @@ private:
     float loss_value;
     float learning_rate;
     float noise_scale;
+    std::vector<std::pair<int, float>> current_saliency;
+    std::string training_phase;
+    std::string opponent_name;
 
     // History
     struct EpochSnapshot {

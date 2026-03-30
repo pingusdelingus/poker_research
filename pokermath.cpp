@@ -140,6 +140,9 @@ int getSklanskyMalmuthGroup(const Card &card1, const Card &card2)
     }
 }
 
+
+
+
 double getRealPlayStatisticsEV(const Card &card1, const Card &card2)
 {
     /*
@@ -338,6 +341,7 @@ bool isStraightDraw(const std::vector<Card> &cards, bool &isOESD)
     return false;
 }
 
+
 HandBand getHandBand(const std::vector<Card> &holeCards,
                      const std::vector<Card> &boardCards)
 {
@@ -446,6 +450,119 @@ HandBand getHandBand(const std::vector<Card> &holeCards,
     // HB_MADE_WEAK;
 
     return HB_AIR;
+}
+
+void updateHandBandBeleif (const std::vector<Card> & boardCards,
+                           const std::vector<Card>& myCards)
+{
+//    float agressionFactor = getAF(boardCards);
+    HandBand  h =getHandBand(boardCards, myCards);
+    
+    
+    switch( h){
+      
+    case HB_AIR:
+       std::cout << "air w no redraw\n" ;
+    case HB_DRAW_WEAK:
+       std::cout << "air w no redraw\n" ;
+              
+
+    case HB_DRAW_STRONG:
+       std::cout << "air w no redraw\n" ;
+    case HB_MADE_MEDIUM: 
+       std::cout << "air w no redraw\n" ;
+
+    // we want to select the weak hands and remove them for our oppornets range
+    //   
+
+
+  } 
+    
+     
+
+
+}// end of updateHandBandBeleif
+
+
+
+BoardTexture getBoardTexture(const std::vector<Card> &boardCards)
+{
+    if (boardCards.size() < 3) {
+        return BT_DRY;
+    }
+
+    int clubs = 0, diamonds = 0, hearts = 0, spades = 0;
+    getAmountPerSuit(clubs, diamonds, hearts, spades, boardCards);
+
+    int maxSuit = std::max({clubs, diamonds, hearts, spades});
+    int suits_present =
+        (clubs > 0) + (diamonds > 0) + (hearts > 0) + (spades > 0);
+
+    bool monotone = (maxSuit == (int)boardCards.size());
+    if (monotone) {
+        return BT_MONOTONE;
+    }
+
+    bool fd_flush = (maxSuit >= 3);
+
+    bool hasValue[15] = {false};
+    int numValues = 0;
+    for (const auto &c : boardCards) {
+        if (!hasValue[c.value]) {
+            hasValue[c.value] = true;
+            numValues++;
+        }
+    }
+    bool paired = (numValues < (int)boardCards.size());
+
+    bool fd_straight = false;
+    for (int i = 2; i <= 10; i++) {
+        int count = 0;
+        for (int j = 0; j < 5; j++) {
+            if (hasValue[i + j]) {
+                count++;
+            }
+        }
+        if (count >= 3) {
+            fd_straight = true;
+            break;
+        }
+    }
+    // Ace low straight (A2345)
+    if (!fd_straight && hasValue[14] && hasValue[2] && hasValue[3]) {
+        fd_straight = true;
+    }
+    if (!fd_straight && hasValue[14] && hasValue[2] && hasValue[4]) {
+        fd_straight = true;
+    }
+    if (!fd_straight && hasValue[14] && hasValue[3] && hasValue[4]) {
+        fd_straight = true;
+    }
+
+    if (fd_flush && fd_straight) {
+        return BT_WET;
+    }
+    if (fd_flush) {
+        return BT_FRONTDOOR_FLUSH;
+    }
+    if (fd_straight) {
+        return BT_FRONTDOOR_STRAIGHT;
+    }
+
+    if (paired) {
+        return BT_REV_IMPL_ODDS;
+    }
+
+    bool rainbow = (suits_present == (int)boardCards.size() ||
+                    (boardCards.size() >= 4 && suits_present >= 3));
+    if (rainbow) {
+        if (!fd_straight) {
+            return BT_DRY;
+        }
+        return BT_RAINBOW;
+    }
+
+    return BT_DRY;
 }
 
 RangeType getOpponentRangeType(const Info &info, int opponentIndex)

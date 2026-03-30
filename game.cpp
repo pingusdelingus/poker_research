@@ -432,6 +432,7 @@ Game::Game(Host* host)
 : host(host)
 , eventCounter(0)
 , numDeals(0)
+, table_running(false)
 , silent(false)
 {
 }
@@ -447,6 +448,7 @@ Game::~Game()
     if(!borrowed) delete observers[i];
   }
   for(size_t i = 0; i < players.size(); i++) delete players[i].ai;
+  for(size_t i = 0; i < playersOut.size(); i++) delete playersOut[i].ai;
 }
 
 //returns false if player wants to quit
@@ -526,6 +528,7 @@ void Game::kickOutPlayers(Table& table)
       else
       {
         leave = true;
+        table_running = false;
       }
     }
     else if(playersIn[i].isHuman())

@@ -601,6 +601,27 @@ void testOpponentPolarity()
   std::cout << "Opponent Polarity tests passed!" << std::endl << std::endl;
 }
 
+void testBoardTextures()
+{
+  std::cout << "Testing Board Textures" << std::endl;
+  
+  auto getTexture = [](const std::vector<std::string>& b) {
+      std::vector<Card> board;
+      for (const auto& s : b) board.push_back(Card(s));
+      return getBoardTexture(board);
+  };
+
+  ASSERT_EQUALS(BT_DRY, getTexture({"2h", "7d", "Ks"}));
+  ASSERT_EQUALS(BT_MONOTONE, getTexture({"Ah", "Kh", "2h"}));
+  ASSERT_EQUALS(BT_FRONTDOOR_FLUSH, getTexture({"2h", "4h", "8h", "Qd"}));
+  ASSERT_EQUALS(BT_FRONTDOOR_STRAIGHT, getTexture({"7h", "8d", "9s"}));
+  ASSERT_EQUALS(BT_WET, getTexture({"7h", "8h", "9h", "Jd"})); // 3 hearts, 3-straight (789J)
+  
+  ASSERT_EQUALS(BT_REV_IMPL_ODDS, getTexture({"2h", "2d", "Ks"})); // Paired board
+
+  std::cout << "Board Textures tests passed!" << std::endl << std::endl;
+}
+
 void doUnitTest()
 {
   std::cout << "Performing Unit Test" << std::endl << std::endl;
@@ -630,5 +651,6 @@ void doUnitTest()
   
   testHandBands();
   testOpponentPolarity();
+  testBoardTextures();
 
 }

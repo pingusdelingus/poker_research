@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <cmath>
 #include <algorithm>
+#include <fstream>
 
 RLDashboard::RLDashboard()
     : total_epochs(0), hands_per_epoch(0)
@@ -24,12 +25,22 @@ void RLDashboard::init(int total_ep, int hands)
     std::cout << "\033[2J\033[H" << std::flush;
 }
 
-void RLDashboard::beginEpoch(int ep)
+void RLDashboard::beginEpoch(int ep, float lr, float noise)
 {
     epoch = ep;
     hands_this_epoch = 0;
     observer = ObserverStatKeeper();
     epoch_start = std::chrono::steady_clock::now();
+    learning_rate = lr;
+    noise_scale = noise;
+    agent_stack = 0;
+    opponent_stack = 0;
+}
+
+void RLDashboard::setPhase(const std::string& phase, const std::string& opponent)
+{
+    training_phase = phase;
+    opponent_name = opponent;
 }
 
 void RLDashboard::onEvent(const Event& event)
@@ -46,13 +57,14 @@ void RLDashboard::onEvent(const Event& event)
     }
 }
 
-void RLDashboard::endEpoch(float a_stack, float o_stack, float loss, float lr, float noise)
+void RLDashboard::endEpoch(float a_stack, float o_stack, float loss, float lr, float noise, const std::vector<std::pair<int, float>>& saliency)
 {
     agent_stack = a_stack;
     opponent_stack = o_stack;
     loss_value = loss;
     learning_rate = lr;
     noise_scale = noise;
+    current_saliency = saliency;
 
     bool won = (a_stack > o_stack);
     if (won) total_wins++;
@@ -64,6 +76,55 @@ void RLDashboard::endEpoch(float a_stack, float o_stack, float loss, float lr, f
     snap.win_rate = (total_epochs_completed > 0)
         ? static_cast<float>(total_wins) / total_epochs_completed : 0.0f;
     history.push_back(snap);
+    
+    logMetrics();
+}
+
+void RLDashboard::logMetrics()
+{
+    std::ofstream log("./logs/rl/training_metrics.csv", std::ios::app);
+    if (epoch == 0) {
+        log << "epoch,agent_stack,opp_stack,net_chips,win_rate,loss,lr,noise,vpip,pfr,af,wsd,wsdw,deals\n";
+    }
+
+    const PlayerStats* agent_stats = observer.getStatKeeper().getPlayerStats("RL_Agent");
+    
+    float vpip = 0.0f, pfr = 0.0f, af = 0.0f, wsd = 0.0f, wsdw = 0.0f;
+    int deals = 0;
+
+    if (agent_stats && agent_stats->deals > 0) {
+        vpip = agent_stats->getVPIP();
+        pfr = agent_stats->getPFR();
+        
+        int postflop_aggr = (agent_stats->bets - agent_stats->preflop_bets)
+                          + (agent_stats->raises - agent_stats->preflop_raises);
+        int postflop_calls = std::max(1, agent_stats->calls - agent_stats->preflop_calls);
+        af = static_cast<float>(postflop_aggr) / postflop_calls;
+
+        wsd = agent_stats->getWSD();
+        wsdw = agent_stats->getWSDW();
+        deals = agent_stats->deals;
+    }
+
+    float net_chips = agent_stack - opponent_stack;
+    float win_rate = history.empty() ? 0.0f : history.back().win_rate;
+
+    log << epoch << ","
+        << agent_stack << ","
+        << opponent_stack << ","
+        << net_chips << ","
+        << win_rate << ","
+        << loss_value << ","
+        << learning_rate << ","
+        << noise_scale << ","
+        << vpip << ","
+        << pfr << ","
+        << af << ","
+        << wsd << ","
+        << wsdw << ","
+        << deals << "\n";
+    
+    log.close();
 }
 
 void RLDashboard::addEvalResult(int ep, float stack)
@@ -153,6 +214,11 @@ void RLDashboard::render()
     ss << "  ================================================================\n";
     ss << "\033[0m\n";
 
+    // Training Phase and Opponent
+    ss << "  \033[4mTraining Status\033[0m\n";
+    ss << "  Phase:    \033[1m" << std::left << std::setw(15) << training_phase << "\033[0m"
+       << "     Opponent: \033[1m" << opponent_name << "\033[0m\n\n";
+
     // Epoch info
     ss << "  Epoch: \033[1m" << epoch + 1 << " / " << total_epochs << "\033[0m"
        << "          Total Time: " << formatTime(total_secs) << "\n";
@@ -211,7 +277,7 @@ void RLDashboard::render()
     }
 
     // Play style
-    const PlayerStats* agent_stats = observer.getStatKeeper().getPlayerStats("Evolved");
+    const PlayerStats* agent_stats = observer.getStatKeeper().getPlayerStats("RL_Agent");
     ss << "  \033[4mAgent Play Style (This Epoch)\033[0m\n";
     ss << "  +--------+--------+--------+--------+--------+--------+\n";
     ss << "  |  VPIP  |  PFR   |   AF   |  WSD   |  WSDW  | Deals  |\n";
@@ -247,15 +313,42 @@ void RLDashboard::render()
     ss << "  +--------+--------+--------+--------+--------+--------+\n";
 
     if (agent_stats && agent_stats->actions > 0) {
-        int total = agent_stats->actions;
-        ss << "  Actions: "
-           << "fold " << std::fixed << std::setprecision(0)
-           << (100.0 * agent_stats->folds / total) << "%"
-           << "  check " << (100.0 * agent_stats->checks / total) << "%"
-           << "  call " << (100.0 * agent_stats->calls / total) << "%"
-           << "  raise " << (100.0 * (agent_stats->bets + agent_stats->raises) / total) << "%\n";
+        double total = static_cast<double>(agent_stats->actions);
+        auto fmtPct = [](double val, double total) -> std::string {
+            if (total <= 0) return " 0.0%";
+            std::stringstream s;
+            s << std::fixed << std::setprecision(1) << std::right << std::setw(4) << (100.0 * val / total) << "%";
+            return s.str();
+        };
+
+        ss << "  \033[4mAction Distribution (This Epoch)\033[0m\n";
+        ss << "  Fold:  " << fmtPct(agent_stats->folds, total) << " " << makeProgressBar(agent_stats->folds, total, 20) << "\n";
+        ss << "  Check: " << fmtPct(agent_stats->checks, total) << " " << makeProgressBar(agent_stats->checks, total, 20) << "\n";
+        ss << "  Call:  " << fmtPct(agent_stats->calls, total) << " " << makeProgressBar(agent_stats->calls, total, 20) << "\n";
+        ss << "  Raise: " << fmtPct(agent_stats->bets + agent_stats->raises, total) << " " << makeProgressBar(agent_stats->bets + agent_stats->raises, total, 20) << "\n";
     }
     ss << "\n";
+
+    // Feature Importance (Saliency)
+    if (!current_saliency.empty()) {
+        static const std::vector<std::string> feature_names = {
+            "Hole1_Rank", "Hole1_Suit", "Hole2_Rank", "Hole2_Suit",
+            "Board1_Rank", "Board1_Suit", "Board2_Rank", "Board2_Suit",
+            "Board3_Rank", "Board3_Suit", "Board4_Rank", "Board4_Suit", "Board5_Rank", "Board5_Suit",
+            "Pot", "Stack", "Call_Amt", "Wager", "Position", "Equity", "PotOdds%", "M-Ratio", "ActivePl",
+            "OppVPIP_Live", "OppPFR_Live", "Hist_Empty", "OppVPIP_10", "OppVPIP_30", "OppVPIP_50", "OppVPIP_100",
+            "OppPFR_10", "OppPFR_30", "OppPFR_50", "OppPFR_100", "OppDonk_10", "OppDonk_30", "OppDonk_50", "OppDonk_100"
+        };
+
+        ss << "  \033[4mTop Feature Importance (Saliency)\033[0m\n";
+        for (int i = 0; i < std::min(10, (int)current_saliency.size()); ++i) {
+            int idx = current_saliency[i].first;
+            float val = current_saliency[i].second;
+            std::string name = (idx < (int)feature_names.size()) ? feature_names[idx] : "Unknown";
+            ss << "  " << std::left << std::setw(15) << name << ": " << std::fixed << std::setprecision(4) << val << "\n";
+        }
+        ss << "\n";
+    }
 
     // Eval vs AISmart baseline
     if (!eval_history.empty()) {

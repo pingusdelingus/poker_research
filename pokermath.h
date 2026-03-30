@@ -70,6 +70,9 @@ enum BoardTexture {
 HandBand getHandBand(const std::vector<Card> &holeCards,
                      const std::vector<Card> &boardCards);
 
+// returns the board texture for a given set of board cards
+BoardTexture getBoardTexture(const std::vector<Card> &boardCards);
+
 // classification for opponent ranges
 enum RangeType {
     RANGE_POLAR,  // only bluffs or super strong hands, NO MEDIUM strength

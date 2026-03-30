@@ -54,6 +54,7 @@ class Game
     size_t eventCounter;
     int numDeals; //how much deals are done since the game started
 
+    bool table_running;
     Rules rules;
     bool silent;
 

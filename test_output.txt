@@ -1,0 +1,296 @@
+Performing Unit Test
+
+0.143702 0.560626 0.00915935 0.507591 0.233028 0.183357 0.933829 0.964524 0.685514 0.108376 0.72208 0.447796 0.195259 0.635272 0.268961 0.668073 0.738198 0.732149 0.154304 0.774378 0.0881863 0.364646 0.689747 0.851303 0.238713 0.507709 0.948036 0.909918 0.746843 0.368926 0.486955 0.722027 0.177964 0.290972 0.663459 0.622781 0.405968 0.0193901 0.0804369 0.416308 0.788446 0.284896 0.350508 0.0918428 0.217981 0.678498 0.493512 0.382311 0.371217 0.101844 
+
+1 0 1 1 0 1 0 1 0 1 1 1 1 0 0 1 1 1 0 0 0 1 0 0 1 1 0 1 0 0 1 1 0 1 1 0 0 1 1 1 0 0 0 1 0 1 0 1 0 1 
+
+3 3 0 1 0 2 3 1 2 3 2 4 1 0 2 0 3 0 4 2 3 2 2 1 2 1 4 1 0 0 4 0 1 3 0 3 4 2 4 4 2 4 2 0 1 4 2 0 3 3 
+testing win chance at flop (6h 2d | 8s Ts Jh)
+win: 0.111173 tie: 0.105436 lose: 0.783391
+
+testing win chance at flop (2h 7d | 5s Js 8h)
+win: 0.180588 tie: 0.0403227 lose: 0.77909
+
+testing win chance at flop (6h 2d | As Ac Jh)
+win: 0.145536 tie: 0.15451 lose: 0.699954
+
+testing win chance at flop (Ah Kd | 8s 7s Jh)
+win: 0.472604 tie: 0.0219083 lose: 0.505488
+
+testing win chance at flop (6h 2d | 8s Ts 6d)
+win: 0.506757 tie: 0.0406694 lose: 0.452574
+
+testing win chance at flop (6h 2d | 8s 6s 2h)
+win: 0.816477 tie: 0.0102944 lose: 0.173228
+
+testing win chance at flop (6h 2d | 6d 6s Jh)
+win: 0.922807 tie: 0.025161 lose: 0.0520319
+
+testing win chance at flop (Ah Td | Js Ks Qh)
+win: 0.90289 tie: 0.0427718 lose: 0.054338
+
+testing win chance at flop (Js Ks | Qh Ah Td)
+win: 0.902217 tie: 0.0425196 lose: 0.0552631
+
+testing win chance at flop (6d 2d | 8d Td Jh)
+win: 0.4227 tie: 0.0689121 lose: 0.508388
+
+testing win chance at flop (6d 2d | 8d Td Jd)
+win: 0.899198 tie: 0.00832189 lose: 0.0924798
+
+testing win chance at flop (6h 2d | 2s 6s 6d)
+win: 0.979207 tie: 0.00763976 lose: 0.0131528
+
+testing win chance at flop (6h 2d | 6s 6d 6c)
+win: 0.999877 tie: 0 lose: 0.000123343
+
+testing win chance at flop (6h 2h | 3h 4h 5h)
+win: 1 tie: 0 lose: 0
+
+testing win chance at flop (Ad Kd | Qd Td Jd)
+win: 1 tie: 0 lose: 0
+
+testing win chance at river (2d 7d | Ad Kd Qd Jd Td)
+win: 0 tie: 1 lose: 0
+
+testing win chance at river (Ad As | Ah Ac Qc Jc Tc)
+win: 0.954545 tie: 0 lose: 0.0454545
+
+testing win chance at flop against 9 (6h 2d | 8s Ts Jh)
+win: 0.0035 tie: 0.0031 lose: 0.9934
+
+testing win chance at flop against 9 (2h 7d | 5s Js 8h)
+win: 0.008 tie: 0.0167 lose: 0.9753
+
+testing win chance at flop against 9 (6h 2d | As Ac Jh)
+win: 0.0029 tie: 0.0066 lose: 0.9905
+
+testing win chance at flop against 9 (Ah Kd | 8s 7s Jh)
+win: 0.0546 tie: 0.0061 lose: 0.9393
+
+testing win chance at flop against 9 (6h 2d | 8s Ts 6d)
+win: 0.0488 tie: 0.0096 lose: 0.9416
+
+testing win chance at flop against 9 (6h 2d | 8s 6s 2h)
+win: 0.2924 tie: 0.0151 lose: 0.6925
+
+testing win chance at flop against 9 (6h 2d | 6d 6s Jh)
+win: 0.4772 tie: 0.1398 lose: 0.383
+
+testing win chance at flop against 9 (Ah Td | Js Ks Qh)
+win: 0.5223 tie: 0.1802 lose: 0.2975
+
+testing win chance at flop against 9 (Js Ks | Qh Ah Td)
+win: 0.5238 tie: 0.1795 lose: 0.2967
+
+testing win chance at flop against 9 (6d 2d | 8d Td Jh)
+win: 0.2308 tie: 0.0036 lose: 0.7656
+
+testing win chance at flop against 9 (6d 2d | 8d Td Jd)
+win: 0.4826 tie: 0.004 lose: 0.5134
+
+testing win chance at flop against 9 (6h 2d | 2s 6s 6d)
+win: 0.8343 tie: 0.0559 lose: 0.1098
+
+testing win chance at flop against 9 (6h 2d | 6s 6d 6c)
+win: 0.999 tie: 0 lose: 0.001
+
+testing win chance at flop against 9 (6h 2h | 3h 4h 5h)
+win: 1 tie: 0 lose: 0
+
+testing win chance at flop against 9 (Ad Kd | Qd Td Jd)
+win: 1 tie: 0 lose: 0
+
+testing eval5 (2h 3d 4s 5s 7h)
+0  original:  7462
+
+testing eval5 (6h 2d 8s Ts Jh)
+217  original:  7245
+
+testing eval5 (2h 7d 5s Js 8h)
+149  original:  7313
+
+testing eval5 (Ah Kd 8s 7s Jh)
+1217  original:  6245
+
+testing eval5 (6h 2d 8s Ts 6d)
+2202  original:  5260
+
+testing eval5 (6h 2d 8s 6s 2h)
+4207  original:  3255
+
+testing eval5 (6h 2d 6d 6s Jh)
+5287  original:  2175
+
+testing eval5 (Ah Td Js Ks Qh)
+5862  original:  1600
+
+testing eval5 (Js Ks Qh Ah Td)
+5862  original:  1600
+
+testing eval5 (6d 2d 8d Td Jh)
+217  original:  7245
+
+testing eval5 (6d 2d 8d Td Jd)
+6080  original:  1382
+
+testing eval5 (6h 2d 2s 6s 6d)
+7188  original:  274
+
+testing eval5 (6h 2d 6s 6d 6c)
+7344  original:  118
+
+testing eval5 (6h 2h 3h 4h 5h)
+7453  original:  9
+
+testing eval5 (Ad Kd Qd Jd Td)
+7461  original:  1
+
+testing eval5 (Ah Kh Qh Jh Th)
+7461  original:  1
+
+testing eval5 (As Ks Qs Js Ts)
+7461  original:  1
+
+testing eval5 (Ac Kc Qc Jc Tc)
+7461  original:  1
+
+Testing Pot Division
+wins: 200 200 200 200 200
+expt: 200 200 200 200 200
+
+Testing Pot Division
+wins: 0 0 1000 0 0
+expt: 0 0 1000 0 0
+
+Testing Pot Division
+wins: 0 0 0 0 0
+expt: 0 0 0 0 0
+
+Testing Pot Division
+wins: 0 225 0 0 0
+expt: 0 225 0 0 0
+
+Testing Pot Division
+wins: 113 112 0 0 0
+expt: 113 112 0 0 0
+
+Testing Pot Division
+wins: 0 315 0 0 0
+expt: 0 315 0 0 0
+
+Testing Pot Division
+wins: 0 0 45 0 990
+expt: 0 0 45 0 990
+
+Testing Pot Division
+wins: 5 4 6 8 8
+expt: 5 4 6 8 8
+
+Testing Pot Division
+wins: 0 0 0 0 50
+expt: 0 0 0 0 50
+
+testing bets settled
+result: 0
+expect: 0
+
+testing bets settled
+result: 1
+expect: 1
+
+testing bets settled
+result: 1
+expect: 1
+
+Testing Combination
+5d 4d 3s 2s 7h 8d 9h
+got: High Card ( 9h 8d 7h 5d 4d )
+exp: High Card ( 9h 8d 7h 5d 4d )
+
+Testing Combination
+Th 5c 3s Td 9s Qd Js
+got: Pair ( Th Td Qd Js 9s )
+exp: Pair ( Th Td Qd Js 9s )
+
+Testing Combination
+Th 9c 3s Td 9s Qd Js
+got: Two Pair ( Th Td 9c 9s Qd )
+exp: Two Pair ( Th Td 9c 9s Qd )
+
+Testing Combination
+4h 4c As 4d 9s Qd Js
+got: Three Of A Kind ( 4h 4c 4d As Qd )
+exp: Three Of A Kind ( 4h 4c 4d As Qd )
+
+Testing Combination
+Th Kc 3s Td 9s Qd Js
+got: Straight ( Kc Qd Js Th 9s )
+exp: Straight ( Kc Qd Js Th 9s )
+
+Testing Combination
+2s 3h 4s 5d 6h 7d 8c
+got: Straight ( 8c 7d 6h 5d 4s )
+exp: Straight ( 8c 7d 6h 5d 4s )
+
+Testing Combination
+3h 8d 4c 3c Ah 2s 5h
+got: Straight ( 5h 4c 3h 2s Ah )
+exp: Straight ( 5h 4c 3h 2s Ah )
+
+Testing Combination
+Th Jd Qc Ks Ah 2s 5h
+got: Straight ( Ah Ks Qc Jd Th )
+exp: Straight ( Ah Ks Qc Jd Th )
+
+Testing Combination
+Th Kc 3h Th 9h Qh Js
+got: Flush ( Qh Th Th 9h 3h )
+exp: Flush ( Qh Th Th 9h 3h )
+
+Testing Combination
+2h 2c As 4d 3s 3d 2s
+got: Full House ( 2h 2c 2s 3s 3d )
+exp: Full House ( 2h 2c 2s 3s 3d )
+
+Testing Combination
+Ah Ac As Ad 9s Qd Js
+got: Four Of A Kind ( Ah Ac As Ad Qd )
+exp: Four Of A Kind ( Ah Ac As Ad Qd )
+
+Testing Combination
+Th Kh 3s Td 9h Qh Jh
+got: Straight Flush ( Kh Qh Jh Th 9h )
+exp: Straight Flush ( Kh Qh Jh Th 9h )
+
+Testing Combination
+3h 8d 4h 3c Ah 2h 5h
+got: Straight Flush ( 5h 4h 3h 2h Ah )
+exp: Straight Flush ( 5h 4h 3h 2h Ah )
+
+Testing Combination
+Th Kh 3s Td Ah Qh Jh
+got: Royal Flush ( Ah Kh Qh Jh Th )
+exp: Royal Flush ( Ah Kh Qh Jh Th )
+
+Testing AhAcAdAsKh > 7h9d3s2d5h
+Testing 6s5h4c3c2s > 5h4c3c2sAh
+Testing 2h3h4h5h6h > Ah2h3h4h5h
+Testing 6s5h4c3c2sKdTd > 5h4c3c2sAh9sTd
+Starting benchmark with 10000000 evaluations 
+Start time: 2026/03/20 11:57:26
+End time: 2026/03/20 11:57:27
+Test value: -1359776652
+
+Testing card print
+2c
+6d
+Th
+As
+
+Testing Hand Bands
+Hand Bands tests passed!
+
+Testing Opponent Polarity
+Opponent Polarity tests passed!
+
