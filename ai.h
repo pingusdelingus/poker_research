@@ -59,10 +59,20 @@ class AI //interface class, used for bots, but also for human players (then the 
     */
     virtual bool wantsToLeave(const Info& info);
 
-    /*
-    getAIName:
-    This is not the name of the player, but the name of his "type of brains".
-    */
     virtual std::string getAIName() = 0;
+};
+
+// Wrapper class that forwards all methods to an inner AI pointer without taking ownership.
+// Useful when Game needs to take ownership of an AI but we want to persist it across epochs.
+class AIBorrowed : public AI {
+    AI* inner;
+public:
+    AIBorrowed(AI* inner) : inner(inner) {}
+    ~AIBorrowed() override {} // Does NOT delete inner
+    Action doTurn(const Info& info) override { return inner->doTurn(info); }
+    void onEvent(const Event& event) override { inner->onEvent(event); }
+    bool boastCards(const Info& info) override { return inner->boastCards(info); }
+    bool wantsToLeave(const Info& info) override { return inner->wantsToLeave(info); }
+    std::string getAIName() override { return inner->getAIName(); }
 };
 

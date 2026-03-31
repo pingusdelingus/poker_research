@@ -71,8 +71,8 @@ struct PokerNetImpl : torch::nn::Module {
     torch::nn::Linear opponent_context{nullptr};
     torch::nn::Linear action_head{nullptr}; 
 
-    PokerNetImpl(int input_size = 25, int hidden_size = 128) {
-        // Static Features (0-24)
+    PokerNetImpl(int input_size = 24, int hidden_size = 128) {
+        // Static Features (0-23)
         card_embedding = register_module("card_embed", torch::nn::Linear(input_size, 64));
         
         // History Sequence (3 features)

@@ -31,16 +31,27 @@ static void loadBestEvolved(AIEvolved* evolved) {
     evolved->setGenome(genome);
 }
 
-void runRLTraining()
+void runRLTraining(const std::string& checkpoint_path)
 {
     system("mkdir -p ./logs/rl");
 
-    PokerNet global_net(25, 128);
+    PokerNet global_net(24, 128);
     float lr_start = 1e-3f;
     float lr_end = 1e-4f;
-    torch::optim::Adam optimizer(global_net->parameters(), lr_start);
+    // weight_decay provides L2 regularization: prevents weights from drifting to
+    // extreme values and causing the policy-collapse / NaN-gradient cycle
+    auto adam_opts = torch::optim::AdamOptions(lr_start).weight_decay(1e-4);
+    torch::optim::Adam optimizer(global_net->parameters(), adam_opts);
     CheckpointManager cp_manager("./logs/rl/rl_poker_model", 100);
 
+    // Load weights if resuming
+    if (!checkpoint_path.empty()) {
+        if (cp_manager.load_checkpoint(global_net, checkpoint_path)) {
+            std::cout << "[Resume] Loaded weights from: " << checkpoint_path << "\n";
+        } else {
+            std::cout << "[Resume] Load failed — starting from scratch.\n";
+        }
+    }
     int num_epochs = 10000; // Increased for longer distillation + self-play
     int hands_per_epoch = 500;
 
@@ -61,10 +72,12 @@ void runRLTraining()
         }
 
         float ent_coeff = 0.001f;
-        if (epoch >= 1000 && epoch < 2000) {
-            ent_coeff = 0.001f * (1.0f - static_cast<float>(epoch - 1000) / 1000.0f);
-        } else if (epoch >= 2000) {
-            ent_coeff = 0.0f;
+        if (epoch >= 1000 && epoch < 3000) {
+            // Decay entropy bonus from 0.001 → 0.0001 (never fully zero)
+            // A residual entropy prevents permanent policy collapse
+            ent_coeff = 0.001f * std::pow(0.1f, static_cast<float>(epoch - 1000) / 2000.0f);
+        } else if (epoch >= 3000) {
+            ent_coeff = 0.0001f; // floor: always nudge away from certainty
         }
 
         dashboard.beginEpoch(epoch, lr, noise);
@@ -99,14 +112,14 @@ void runRLTraining()
             else agent2 = new AICall(); // "ai_human" placeholder
 
             dashboard.setPhase("Distillation", agent2->getAIName());
-            game.addPlayer(Player(agent1, "RL_Agent"));
-            game.addPlayer(Player(agent2, agent2->getAIName()));
+            game.addPlayer(Player(new AIBorrowed(agent1), "RL_Agent"));
+            game.addPlayer(Player(new AIBorrowed(agent2), agent2->getAIName()));
         } else {
             // Self-play phase
             agent2 = new AIRL(global_net, optimizer, 1000.0f, noise, ent_coeff);
             dashboard.setPhase("Self-Play", "AIRL (Self)");
-            game.addPlayer(Player(agent1, "RL_Agent"));
-            game.addPlayer(Player(agent2, "Opponent"));
+            game.addPlayer(Player(new AIBorrowed(agent1), "RL_Agent"));
+            game.addPlayer(Player(new AIBorrowed(agent2), "Opponent"));
         }
 
         game.doGame();
@@ -123,11 +136,13 @@ void runRLTraining()
         optimizer.step();
         optimizer.zero_grad();
 
+        // Fetch saliency BEFORE updating dashboard
+        auto top_features = agent1->getTopFeatures();
+
         for (auto& group : optimizer.param_groups()) {
             static_cast<torch::optim::AdamOptions&>(group.options()).lr(lr);
         }
 
-        auto top_features = agent1->getTopFeatures();
         dashboard.endEpoch(agent_stack, opp_stack, epoch_loss, lr, noise, top_features);
         dashboard.render();
 
@@ -146,10 +161,25 @@ void runRLTraining()
             }
         }
 
+        // We explicitly delete agent2 since Game only deleted the AIBorrowed wrapper
+        if (agent2) {
+            delete agent2;
+            agent2 = nullptr;
+        }
+
         if (epoch % 10 == 0) {
             cp_manager.save_checkpoint(global_net, epoch);
             cp_manager.run_evaluation(global_net, epoch);
         }
+
+        if (agent1) {
+            delete agent1;
+            agent1 = nullptr;
+        }
     }
+
+    // Training complete: save final checkpoint and write summary
+    cp_manager.save_checkpoint(global_net, num_epochs);
+    dashboard.writeFinalSummary("FINAL_DASHBOARD_SUMMARY.txt");
 }
 

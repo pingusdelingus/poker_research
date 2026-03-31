@@ -57,7 +57,12 @@ private:
         std::vector<float> seen_range;    // 1326 floats
         int hand_bucket = 0;
 
-        OpponentTracker() : assumed_range(1326, 1.0f/1326.0f), seen_range(1326, 0.0f) {}
+        // Cache: HandBand probabilities recomputed only on street change
+        std::vector<float> cached_hb_probs; // 7 floats
+        bool hb_probs_dirty = true;         // recompute flag
+
+        OpponentTracker() : assumed_range(1326, 1.0f/1326.0f), seen_range(1326, 0.0f),
+                            cached_hb_probs(7, 1.0f/7.0f), hb_probs_dirty(true) {}
     } opp_tracker;
 
     // Last street aggressor (for donk bet detection)

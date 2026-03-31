@@ -33,6 +33,7 @@
 #include "tools_terminal.h"
 #include "unittest.h"
 #include "rl_trainer.h"
+#include "checkpoint.h"
 
 int main(int argc, char** argv)
 {
@@ -76,7 +77,51 @@ int main(int argc, char** argv)
     }
 
     // Default: RL training (REINFORCE with PokerNet)
-    runRLTraining();
+    // ── Startup Menu ────────────────────────────────────────────────────────
+    CheckpointManager menu_cp("./logs/rl/rl_poker_model", 100);
+    std::string latest = menu_cp.find_latest_checkpoint();
+
+    std::string checkpoint_to_load = "";
+
+    std::cout << "\n";
+    std::cout << "  ╔══════════════════════════════════════════╗\n";
+    std::cout << "  ║        PokerNet  ─  Training Setup       ║\n";
+    std::cout << "  ╚══════════════════════════════════════════╝\n\n";
+
+    if (latest.empty()) {
+        // No saved model found — start fresh automatically
+        std::cout << "  No saved checkpoint found.\n";
+        std::cout << "  Starting fresh training...\n\n";
+    } else {
+        std::cout << "  Latest checkpoint: " << latest << "\n\n";
+        std::cout << "  [1]  Resume from checkpoint\n";
+        std::cout << "  [2]  Start fresh (discards saved weights)\n";
+        std::cout << "  [3]  Load a specific checkpoint file\n";
+        std::cout << "\n  Choice: ";
+
+        int choice = 0;
+        std::cin >> choice;
+        std::cin.ignore();
+
+        if (choice == 1) {
+            checkpoint_to_load = latest;
+            std::cout << "\n  Resuming from: " << latest << "\n\n";
+        } else if (choice == 3) {
+            std::cout << "  Enter checkpoint file path: ";
+            std::getline(std::cin, checkpoint_to_load);
+            // Trim surrounding whitespace/quotes the user might paste
+            while (!checkpoint_to_load.empty() && (checkpoint_to_load.front() == '"' || checkpoint_to_load.front() == ' '))
+                checkpoint_to_load.erase(checkpoint_to_load.begin());
+            while (!checkpoint_to_load.empty() && (checkpoint_to_load.back() == '"' || checkpoint_to_load.back() == ' '))
+                checkpoint_to_load.pop_back();
+            std::cout << "\n  Loading: " << checkpoint_to_load << "\n\n";
+        } else {
+            std::cout << "\n  Starting fresh training...\n\n";
+        }
+    }
+    // ── End Menu ─────────────────────────────────────────────────────────────
+
+    runRLTraining(checkpoint_to_load);
 
     return 0;
 }

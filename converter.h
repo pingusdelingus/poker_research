@@ -19,10 +19,10 @@ struct ActionNode {
 
 class TensorConverter {
 public:
-    // 0-24: Static State (25 floats)
-    // 25-46: Opponent Stats & Metadata (22 floats)
-    static constexpr const int INPUT_SIZE = 47;
-    static constexpr const int STATIC_SIZE = 25;
+    // 0-23: Static State (24 floats, M-ratio removed)
+    // 24-45: Opponent Stats & Metadata (22 floats)
+    static constexpr const int INPUT_SIZE = 46;
+    static constexpr const int STATIC_SIZE = 24;
     static constexpr const int OPPONENT_SIZE = 22;
 
     // Converts the game state (Info) + Opponent Stats into a [1, INPUT_SIZE] Tensor

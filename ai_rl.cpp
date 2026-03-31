@@ -100,6 +100,13 @@ Action AIRL::doTurn(const Info& info)
   torch::Tensor hist = history_to_tensor();
   torch::Tensor out_vec = net->forward_with_history(static_part, hist, opp_part);
 
+  // Guard: if weights are corrupted (NaN/Inf), skip this decision safely
+  if (torch::any(torch::isnan(out_vec)).item<bool>() ||
+      torch::any(torch::isinf(out_vec)).item<bool>()) {
+    // Can't learn from this step; return a safe action without touching gradients
+    return info.getCheckFoldAction();
+  }
+
   // 3. stochastic exploration (reparameterization / discrete sampling)
   torch::Tensor logits = out_vec.slice(1, 0, 3);
   torch::Tensor sizing = out_vec.slice(1, 3, 4);
@@ -169,14 +176,18 @@ Action AIRL::doTurn(const Info& info)
 void AIRL::onEvent(const Event& event) {
     if (event.type == E_NEW_DEAL) {
         current_board.clear();
+        opp_tracker.hb_probs_dirty = true; // reset cache for new hand
     } else if (event.type == E_FLOP) {
         current_board.push_back(event.card1);
         current_board.push_back(event.card2);
         current_board.push_back(event.card3);
+        opp_tracker.hb_probs_dirty = true; // new board = stale cache
     } else if (event.type == E_TURN) {
         current_board.push_back(event.card4);
+        opp_tracker.hb_probs_dirty = true;
     } else if (event.type == E_RIVER) {
         current_board.push_back(event.card5);
+        opp_tracker.hb_probs_dirty = true;
     }
 
     // Update opponent stats from events
@@ -193,6 +204,7 @@ void AIRL::onEvent(const Event& event) {
         if (event.type == E_RAISE) {
             last_street_aggressor = event.player;
         }
+        // hb_probs_dirty is set inside update_opponent_stats when the range changes
     }
 
     // Accumulate winnings for this agent
@@ -215,17 +227,19 @@ void AIRL::onEvent(const Event& event) {
             float total_invested = last_wager + last_action_cost;
 
             // Net chip gain normalized by buy-in
+            // Uses total_won (what we won from pot) vs total_invested (what we put in)
             float chip_gain = (total_won - total_invested) / buy_in;
 
-            // VPIP Penalty: small penalty to discourage over-calling/raising
-            if (vpip_this_hand) {
-                chip_gain -= 0.01f; 
-            }
+            // NOTE: VPIP penalty removed — it was incorrectly penalizing any
+            // voluntary bet, creating systematic fold bias.
 
-            // Survival factor: penalizes hands where stack dipped low (all-ins)
-            float survival_factor = std::max(MIN_SURVIVAL, min_stack / buy_in);
+            // Survival factor: only penalize catastrophic stack loss (< 20% of buy-in).
+            // We use min_stack (lowest point during the hand) rather than the raw
+            // min across all committed chips, so a brief dip for a call doesn't
+            // unfairly penalize profitable aggression.
+            float survival_factor = (min_stack < 0.2f * buy_in) ? 0.5f : 1.0f;
 
-            // Final survival-weighted reward
+            // Final reward
             float reward = chip_gain * survival_factor;
 
             // Advantage over baseline for variance reduction
@@ -238,22 +252,37 @@ void AIRL::onEvent(const Event& event) {
                 loss = loss - exp.log_prob * advantage - entropy_coeff * exp.entropy;
             }
 
-            loss.backward();
+            // Guard: skip backward entirely if loss is non-finite
+            // (can happen when weights have exploded, avoids propagating NaN into grads)
+            float loss_val = loss.item<float>();
+            if (!std::isfinite(loss_val)) {
+                // Don't backward, don't accumulate — just drop this hand
+            } else {
+                loss.backward();
 
-            // Saliency accumulation (at the moment of the decision's gradient)
-            for (const auto& exp : hand_experiences) {
-                if (exp.state.grad().defined()) {
-                    if (!accumulated_saliency.defined()) {
-                        accumulated_saliency = torch::zeros({TensorConverter::INPUT_SIZE});
-                        saliency_count = 0;
+                // Per-hand gradient clip: prevents a single bad hand from
+                // poisoning the epoch's accumulated gradient buffer
+                torch::nn::utils::clip_grad_norm_(net->parameters(), MAX_GRAD_NORM);
+
+                // Saliency accumulation — only add if gradient is fully finite
+                for (const auto& exp : hand_experiences) {
+                    if (exp.state.grad().defined()) {
+                        auto grad_abs = exp.state.grad().abs().sum(0).detach();
+                        if (!torch::any(torch::isnan(grad_abs)).item<bool>() &&
+                            !torch::any(torch::isinf(grad_abs)).item<bool>()) {
+                            if (!accumulated_saliency.defined()) {
+                                accumulated_saliency = torch::zeros({TensorConverter::INPUT_SIZE});
+                                saliency_count = 0;
+                            }
+                            accumulated_saliency += grad_abs;
+                            saliency_count++;
+                        }
                     }
-                    accumulated_saliency += exp.state.grad().abs().sum(0).detach();
-                    saliency_count++;
                 }
-            }
 
-            accumulated_loss += loss.item<float>();
-            hand_count_in_epoch++;
+                accumulated_loss += loss_val;
+                hand_count_in_epoch++;
+            }
         }
 
         // Reset for new hand
@@ -273,6 +302,7 @@ void AIRL::onEvent(const Event& event) {
 void AIRL::update_opponent_stats(const Event& event) {
     if (event.type == E_NEW_DEAL) {
         std::fill(opp_tracker.assumed_range.begin(), opp_tracker.assumed_range.end(), 1.0f/1326.0f);
+        opp_tracker.hb_probs_dirty = true; // range was reset, invalidate cache
         if (opp_tracker.active_in_hand) {
             opp_tracker.vpip_history.push_front(opp_tracker.current_hand_vpip ? 1 : 0);
             opp_tracker.pfr_history.push_front(opp_tracker.current_hand_pfr ? 1 : 0);
@@ -291,11 +321,14 @@ void AIRL::update_opponent_stats(const Event& event) {
         opp_tracker.active_in_hand = true;
 
         if (event.type == E_RAISE) {
-            updateOpponentRange(opp_tracker.assumed_range, current_board, 2); // 2 is RAISE
+            updateOpponentRange(opp_tracker.assumed_range, current_board, 2);
+            opp_tracker.hb_probs_dirty = true;
         } else if (event.type == E_CALL) {
-            updateOpponentRange(opp_tracker.assumed_range, current_board, 1); // 1 is CALL
+            updateOpponentRange(opp_tracker.assumed_range, current_board, 1);
+            opp_tracker.hb_probs_dirty = true;
         } else if (event.type == E_CHECK) {
-            updateOpponentRange(opp_tracker.assumed_range, current_board, 0); // 0 is CHECK
+            updateOpponentRange(opp_tracker.assumed_range, current_board, 0);
+            opp_tracker.hb_probs_dirty = true;
         }
 
         if (current_round_tracker == R_PRE_FLOP) {
@@ -329,9 +362,16 @@ std::vector<float> AIRL::get_opponent_features() {
     std::vector<float> feats;
     feats.reserve(TensorConverter::OPPONENT_SIZE);
 
-    // 0-6: HandBand Probs from 1326 tracking array
-    auto probs = getOpponentHandBandProbabilities(current_board, opp_tracker.assumed_range);
-    feats.insert(feats.end(), probs.begin(), probs.end());
+    // 0-6: HandBand Probs — computed once per street change, cached for all decisions on that street.
+    // Previously this ran 1326 full hand evaluations on EVERY doTurn call (O(1326) per decision),
+    // now it only recomputes when the board or range changes.
+    if (opp_tracker.hb_probs_dirty) {
+        opp_tracker.cached_hb_probs = getOpponentHandBandProbabilities(current_board, opp_tracker.assumed_range);
+        opp_tracker.hb_probs_dirty = false;
+    }
+    for (float p : opp_tracker.cached_hb_probs) {
+        feats.push_back(std::min(1.0f, p * 2.0f));
+    }
 
     // 7: Hand VPIP (Live), 8: Hand PFR (Live), 9: History Is Empty
     feats.push_back(opp_tracker.current_hand_vpip ? 1.0f : 0.0f);
@@ -374,8 +414,8 @@ float AIRL::applyEpochReward(float epoch_reward)
         // Simple final hand update using its own chip gain signal
         float total_invested = last_wager + last_action_cost;
         float chip_gain = (total_won - total_invested) / buy_in;
-        if (vpip_this_hand) chip_gain -= 0.01f;
-        float survival_factor = std::max(MIN_SURVIVAL, min_stack / buy_in);
+        // Survival factor: only penalize critically low stack at end of hand
+        float survival_factor = (min_stack < 0.2f * buy_in) ? 0.5f : 1.0f;
         float reward = chip_gain * survival_factor;
         float advantage = reward - reward_baseline;
         reward_baseline = BASELINE_DECAY * reward_baseline + (1.0f - BASELINE_DECAY) * reward;
@@ -384,22 +424,33 @@ float AIRL::applyEpochReward(float epoch_reward)
         for (const auto& exp : hand_experiences) {
             loss = loss - exp.log_prob * advantage - entropy_coeff * exp.entropy;
         }
-        loss.backward();
+        // Guard: skip backward if loss is non-finite
+        float loss_val = loss.item<float>();
+        if (!std::isfinite(loss_val)) {
+            // Drop the last hand silently
+        } else {
+            loss.backward();
+            torch::nn::utils::clip_grad_norm_(net->parameters(), MAX_GRAD_NORM);
 
-        // Final hand saliency
-        for (const auto& exp : hand_experiences) {
-            if (exp.state.grad().defined()) {
-                if (!accumulated_saliency.defined()) {
-                    accumulated_saliency = torch::zeros({TensorConverter::INPUT_SIZE});
-                    saliency_count = 0;
+            // Final hand saliency (NaN-guarded)
+            for (const auto& exp : hand_experiences) {
+                if (exp.state.grad().defined()) {
+                    auto grad_abs = exp.state.grad().abs().sum(0).detach();
+                    if (!torch::any(torch::isnan(grad_abs)).item<bool>() &&
+                        !torch::any(torch::isinf(grad_abs)).item<bool>()) {
+                        if (!accumulated_saliency.defined()) {
+                            accumulated_saliency = torch::zeros({TensorConverter::INPUT_SIZE});
+                            saliency_count = 0;
+                        }
+                        accumulated_saliency += grad_abs;
+                        saliency_count++;
+                    }
                 }
-                accumulated_saliency += exp.state.grad().abs().sum(0).detach();
-                saliency_count++;
             }
-        }
 
-        accumulated_loss += loss.item<float>();
-        hand_count_in_epoch++;
+            accumulated_loss += loss_val;
+            hand_count_in_epoch++;
+        }
     }
 
     // 2. Calculate average loss for the epoch
@@ -422,6 +473,14 @@ std::vector<std::pair<int, float>> AIRL::getTopFeatures() {
     if (!accumulated_saliency.defined() || saliency_count == 0) return result;
 
     torch::Tensor mean_saliency = (accumulated_saliency / (float)saliency_count);
+
+    // Normalize to relative importance: max feature = 1.0
+    // This makes the dashboard readable regardless of absolute gradient scale
+    float max_val = mean_saliency.max().item<float>();
+    if (max_val > 1e-10f) {
+        mean_saliency = mean_saliency / max_val;
+    }
+
     for (int i = 0; i < TensorConverter::INPUT_SIZE; ++i) {
         result.push_back({i, mean_saliency[i].item<float>()});
     }

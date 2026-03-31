@@ -61,12 +61,12 @@ torch::Tensor TensorConverter::infoToTensor(const Info& info, const std::vector<
   features.push_back((float)info.getPosition() / (float)std::max(1, info.getNumPlayers() - 1)); // [18] position
   features.push_back((float)info.getPotEquity());                                         // [19] pot equity
   features.push_back((float)info.getPotOddsPercentage());                                 // [20] pot odds pct
-  features.push_back((float)info.getMRatio() / 50.0f);                                    // [21] m-ratio
-  features.push_back((float)info.getNumActivePlayers() / 9.0f);                           // [22] active players
+  // [21] M-Ratio REMOVED - irrelevant metric, replaced by direct stack/pot features
+  features.push_back((float)info.getNumActivePlayers() / 9.0f);                           // [21] active players
 
-  // 23: Board Texture (normalized 0-1)
+  // [22]: Board Texture (7 categories, normalized 0-1)
   BoardTexture bt = getBoardTexture(board);
-  features.push_back((float)bt / 6.0f); // 0-6 range
+  features.push_back((float)bt / 6.0f);
 
   // 24: Opponent Range Type (normalized 0-1)
   int oppIdx = (info.yourIndex == 0) ? 1 : 0;

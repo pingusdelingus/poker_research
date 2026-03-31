@@ -32,6 +32,9 @@ public:
     // Render the dashboard
     void render();
 
+    // Write a plain-text final summary to FINAL_DASHBOARD_SUMMARY.txt
+    void writeFinalSummary(const std::string& output_path = "FINAL_DASHBOARD_SUMMARY.txt");
+
     // Log metrics to a CSV file
     void logMetrics();
 
