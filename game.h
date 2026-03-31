@@ -82,5 +82,6 @@ class Game
     void runTable(Table& table);
 
     void doGame();
+    int getNumDeals() const { return numDeals; }
 };
 

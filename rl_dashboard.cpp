@@ -12,7 +12,7 @@ RLDashboard::RLDashboard()
     , epoch(0), hands_this_epoch(0)
     , agent_stack(0), opponent_stack(0)
     , loss_value(0), learning_rate(0), noise_scale(0)
-    , total_wins(0), total_epochs_completed(0)
+    , total_wins(0), total_games(0), total_epochs_completed(0)
 {
     train_start = std::chrono::steady_clock::now();
     epoch_start = train_start;
@@ -57,7 +57,7 @@ void RLDashboard::onEvent(const Event& event)
     }
 }
 
-void RLDashboard::endEpoch(float a_stack, float o_stack, float loss, float lr, float noise, const std::vector<std::pair<int, float>>& saliency)
+void RLDashboard::endEpoch(float a_stack, float o_stack, float loss, float lr, float noise, const std::vector<std::pair<int, float>>& saliency, int sub_wins, int sub_games)
 {
     agent_stack = a_stack;
     opponent_stack = o_stack;
@@ -66,15 +66,15 @@ void RLDashboard::endEpoch(float a_stack, float o_stack, float loss, float lr, f
     noise_scale = noise;
     current_saliency = saliency;
 
-    bool won = (a_stack > o_stack);
-    if (won) total_wins++;
+    total_wins += sub_wins;
+    total_games += std::max(1, sub_games);
     total_epochs_completed++;
 
     EpochSnapshot snap;
     snap.agent_stack = a_stack;
     snap.opponent_stack = o_stack;
-    snap.win_rate = (total_epochs_completed > 0)
-        ? static_cast<float>(total_wins) / total_epochs_completed : 0.0f;
+    snap.win_rate = (total_games > 0)
+        ? static_cast<float>(total_wins) / total_games : 0.0f;
     history.push_back(snap);
     
     logMetrics();

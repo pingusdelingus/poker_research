@@ -82,20 +82,6 @@ void runRLTraining(const std::string& checkpoint_path)
 
         dashboard.beginEpoch(epoch, lr, noise);
 
-        Rules rules;
-        rules.buyIn = 1000;
-        rules.bigBlind = 10;
-        rules.smallBlind = 5;
-        rules.allowRebuy = false;
-        rules.fixedNumberOfDeals = hands_per_epoch;
-
-        HostSilent host;
-        Game game(&host);
-        game.setRules(rules);
-        game.setSilent(true);
-
-        game.addObserverBorrowed(&dashboard);
-
         AIRL* agent1 = new AIRL(global_net, optimizer, 1000.0f, noise, ent_coeff);
         AI* agent2 = nullptr;
 
@@ -112,22 +98,66 @@ void runRLTraining(const std::string& checkpoint_path)
             else agent2 = new AICall(); // "ai_human" placeholder
 
             dashboard.setPhase("Distillation", agent2->getAIName());
-            game.addPlayer(Player(new AIBorrowed(agent1), "RL_Agent"));
-            game.addPlayer(Player(new AIBorrowed(agent2), agent2->getAIName()));
         } else {
             // Self-play phase
             agent2 = new AIRL(global_net, optimizer, 1000.0f, noise, ent_coeff);
             dashboard.setPhase("Self-Play", "AIRL (Self)");
-            game.addPlayer(Player(new AIBorrowed(agent1), "RL_Agent"));
-            game.addPlayer(Player(new AIBorrowed(agent2), "Opponent"));
         }
 
-        game.doGame();
-        
-        float agent_stack = static_cast<float>(game.getFinalStack("RL_Agent"));
-        float opp_stack = (distillation_complete) ? static_cast<float>(game.getFinalStack("Opponent")) : static_cast<float>(game.getFinalStack(agent2->getAIName()));
+        // --- Inner sub-game loop: keeps running games until 500 hands are played ---
+        int hands_played = 0;
+        float epoch_net_chips = 0.0f; // cumulative agent net chips this epoch
+        int epoch_sub_wins = 0;       // how many sub-games the agent won
+        int epoch_sub_games = 0;      // how many sub-games were played total
+        float epoch_loss = 0.0f;
 
-        float epoch_loss = agent1->applyEpochReward(agent_stack);
+        while (hands_played < hands_per_epoch) {
+            int remaining = hands_per_epoch - hands_played;
+
+            Rules sub_rules;
+            sub_rules.buyIn = 1000;
+            sub_rules.bigBlind = 10;
+            sub_rules.smallBlind = 5;
+            sub_rules.allowRebuy = false;
+            sub_rules.fixedNumberOfDeals = remaining;
+
+            HostSilent sub_host;
+            Game sub_game(&sub_host);
+            sub_game.setRules(sub_rules);
+            sub_game.setSilent(true);
+            sub_game.addObserverBorrowed(&dashboard);
+
+            sub_game.addPlayer(Player(new AIBorrowed(agent1), "RL_Agent"));
+            if (!distillation_complete) {
+                sub_game.addPlayer(Player(new AIBorrowed(agent2), agent2->getAIName()));
+            } else {
+                sub_game.addPlayer(Player(new AIBorrowed(agent2), "Opponent"));
+            }
+
+            sub_game.doGame();
+
+            int dealt = sub_game.getNumDeals();
+            hands_played += dealt;
+
+            // Sub-game result: read final stacks
+            float sg_agent = static_cast<float>(sub_game.getFinalStack("RL_Agent"));
+            float sg_opp = (!distillation_complete)
+                ? static_cast<float>(sub_game.getFinalStack(agent2->getAIName()))
+                : static_cast<float>(sub_game.getFinalStack("Opponent"));
+
+            // Accumulate: net chips gained/lost vs starting 1000
+            epoch_net_chips += (sg_agent - 1000.0f);
+
+            // Win/loss: agent had more chips at end of sub-game
+            epoch_sub_games++;
+            if (sg_agent > sg_opp) epoch_sub_wins++;
+        }
+
+        // Epoch total stacks = starting 1000 +/- cumulative gains
+        float agent_stack = 1000.0f + epoch_net_chips;
+        float opp_stack   = 2000.0f - agent_stack; // chips are conserved (2x1000 buyIn)
+
+        epoch_loss = agent1->applyEpochReward(agent_stack);
         if (distillation_complete) {
             static_cast<AIRL*>(agent2)->applyEpochReward(opp_stack);
         }
@@ -143,11 +173,13 @@ void runRLTraining(const std::string& checkpoint_path)
             static_cast<torch::optim::AdamOptions&>(group.options()).lr(lr);
         }
 
-        dashboard.endEpoch(agent_stack, opp_stack, epoch_loss, lr, noise, top_features);
+        dashboard.endEpoch(agent_stack, opp_stack, epoch_loss, lr, noise, top_features, epoch_sub_wins, epoch_sub_games);
         dashboard.render();
 
         if (!distillation_complete) {
-            win_window.push_back((agent_stack > 1000) ? 1 : 0);
+            // Epoch won if agent won majority of sub-games  
+            int epoch_won = (epoch_sub_wins * 2 > epoch_sub_games) ? 1 : 0;
+            win_window.push_back(epoch_won);
             if (win_window.size() > window_size) win_window.pop_front();
 
             if (win_window.size() == window_size) {
