@@ -32,6 +32,7 @@ public:
     void reset_history();
     void add_to_history(int cmd, float amt, int pos);
     torch::Tensor history_to_tensor();
+    torch::Tensor history_to_tensor_from(int start);
     
     // Opponent Tracking
     std::vector<float> get_opponent_features();
@@ -61,9 +62,26 @@ private:
         std::vector<float> cached_hb_probs; // 7 floats
         bool hb_probs_dirty = true;         // recompute flag
 
+        // Sizing tell: EMA of opponent's raise amounts in BB units (persists across hands).
+        // Humans who bet large with strong hands and small with weak hands will drift high/low.
+        float avg_raise_bb = 1.0f;
+
+        // Range type EMA: smoothed cross-hand estimate of whether opponent plays polar,
+        // linear, or unknown ranges. Initialized to 1.0 (RANGE_UNKNOWN normalized by /2).
+        // Updated at end of each hand using the final within-hand range estimate.
+        float range_type_ema = 1.0f;
+
         OpponentTracker() : assumed_range(1326, 1.0f/1326.0f), seen_range(1326, 0.0f),
-                            cached_hb_probs(7, 1.0f/7.0f), hb_probs_dirty(true) {}
+                            cached_hb_probs(7, 1.0f/7.0f), hb_probs_dirty(true),
+                            avg_raise_bb(1.0f), range_type_ema(1.0f) {}
     } opp_tracker;
+
+    // Big blind for the current game session (updated from E_NEW_DEAL events)
+    int current_big_blind;
+
+    // Last range type observed this hand (normalized 0–1), stored in doTurn where Info
+    // is available, then pushed into opp_tracker.range_type_ema at E_POT_DIVISION.
+    float last_range_type_raw;
 
     // Last street aggressor (for donk bet detection)
     std::string last_street_aggressor;
@@ -73,6 +91,8 @@ private:
     // LSTM history
     std::shared_ptr<ActionNode> history_head;
     std::shared_ptr<ActionNode> history_tail;
+    int history_length;   // total actions added this hand
+    int history_position; // actions already fed through LSTM
     torch::Tensor h_state;
     torch::Tensor c_state;
 

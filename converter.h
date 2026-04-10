@@ -19,11 +19,11 @@ struct ActionNode {
 
 class TensorConverter {
 public:
-    // 0-23: Static State (24 floats, M-ratio removed)
-    // 24-45: Opponent Stats & Metadata (22 floats)
-    static constexpr const int INPUT_SIZE = 46;
-    static constexpr const int STATIC_SIZE = 24;
-    static constexpr const int OPPONENT_SIZE = 22;
+    // 0-25: Static State (26 floats): original 24 + rel_bet_size + street
+    // 26-49: Opponent Stats & Metadata (24 floats): original 22 + avg_raise_bb + range_type_ema
+    static constexpr const int INPUT_SIZE = 50;
+    static constexpr const int STATIC_SIZE = 26;
+    static constexpr const int OPPONENT_SIZE = 24;
 
     // Converts the game state (Info) + Opponent Stats into a [1, INPUT_SIZE] Tensor
     static torch::Tensor infoToTensor(const Info& info, const std::vector<float>& opponent_stats);

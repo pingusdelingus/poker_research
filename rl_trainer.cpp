@@ -35,7 +35,7 @@ void runRLTraining(const std::string& checkpoint_path)
 {
     system("mkdir -p ./logs/rl");
 
-    PokerNet global_net(24, 128);
+    PokerNet global_net(26, 128);
     float lr_start = 1e-3f;
     float lr_end = 1e-4f;
     // weight_decay provides L2 regularization: prevents weights from drifting to
@@ -109,6 +109,7 @@ void runRLTraining(const std::string& checkpoint_path)
         float epoch_net_chips = 0.0f; // cumulative agent net chips this epoch
         int epoch_sub_wins = 0;       // how many sub-games the agent won
         int epoch_sub_games = 0;      // how many sub-games were played total
+        int epoch_opp_busts = 0;      // how many times the opponent lost all chips
         float epoch_loss = 0.0f;
 
         while (hands_played < hands_per_epoch) {
@@ -151,11 +152,15 @@ void runRLTraining(const std::string& checkpoint_path)
             // Win/loss: agent had more chips at end of sub-game
             epoch_sub_games++;
             if (sg_agent > sg_opp) epoch_sub_wins++;
+            if (sg_opp == 0) epoch_opp_busts++;
         }
 
-        // Epoch total stacks = starting 1000 +/- cumulative gains
-        float agent_stack = 1000.0f + epoch_net_chips;
-        float opp_stack   = 2000.0f - agent_stack; // chips are conserved (2x1000 buyIn)
+        // Average net chips per sub-game, mapped back to a 1000-chip buy-in reference.
+        // Dividing by sub-game count prevents unbounded growth when many sub-games run per epoch
+        // (e.g. opponent busts quickly, resetting stacks multiple times).
+        float avg_net   = (epoch_sub_games > 0) ? epoch_net_chips / epoch_sub_games : 0.0f;
+        float agent_stack = 1000.0f + avg_net;
+        float opp_stack   = 2000.0f - agent_stack;
 
         epoch_loss = agent1->applyEpochReward(agent_stack);
         if (distillation_complete) {
@@ -173,7 +178,7 @@ void runRLTraining(const std::string& checkpoint_path)
             static_cast<torch::optim::AdamOptions&>(group.options()).lr(lr);
         }
 
-        dashboard.endEpoch(agent_stack, opp_stack, epoch_loss, lr, noise, top_features, epoch_sub_wins, epoch_sub_games);
+        dashboard.endEpoch(agent_stack, opp_stack, epoch_loss, lr, noise, top_features, epoch_sub_wins, epoch_sub_games, epoch_opp_busts);
         dashboard.render();
 
         if (!distillation_complete) {
@@ -186,7 +191,7 @@ void runRLTraining(const std::string& checkpoint_path)
                 int wins = 0;
                 for (int w : win_window) wins += w;
                 float win_rate = static_cast<float>(wins) / window_size;
-                if (win_rate >= 0.70f) {
+                if (win_rate >= 0.80f) {
                     std::cout << "\n>>> Distillation complete! Switching to self-play at epoch " << epoch << " <<<\n";
                     distillation_complete = true;
                 }

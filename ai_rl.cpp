@@ -16,7 +16,9 @@ AIRL::AIRL(PokerNet& n, torch::optim::Optimizer& opt, float buy_in_amount, float
     epoch_reward_baseline(0.0f),
     current_round_tracker(R_PRE_FLOP),
     accumulated_loss(0.0f),
-    hand_count_in_epoch(0)
+    hand_count_in_epoch(0),
+    current_big_blind(10),
+    last_range_type_raw(1.0f)
 {
   reset_history();
 } // end of constructor
@@ -25,7 +27,8 @@ void AIRL::reset_history()
 {
   history_head = nullptr;
   history_tail = nullptr;
-  // initialize hidden states for the lstm
+  history_length = 0;
+  history_position = 0;
   h_state = torch::zeros({1, 1, 128});
   c_state = torch::zeros({1, 1, 128});
   hand_experiences.clear();
@@ -41,6 +44,7 @@ void AIRL::add_to_history(int cmd, float amt, int pos)
     history_tail->next = new_node;
     history_tail = new_node;
   }
+  history_length++;
 } // end of add_to_history
 
 
@@ -61,6 +65,27 @@ torch::Tensor AIRL::history_to_tensor()
   if (len == 0) return torch::zeros({1, 1, 3});
 
   // create tensor [len, 1, 3]
+  return torch::from_blob(data.data(), {len, 1, 3}, torch::kFloat).clone();
+}
+
+// Returns only the actions from index `start` onward as a tensor.
+// Used for incremental LSTM feeding: only new actions since the last doTurn.
+torch::Tensor AIRL::history_to_tensor_from(int start)
+{
+  std::vector<float> data;
+  int idx = 0;
+  auto curr = history_head;
+  while (curr) {
+    if (idx >= start) {
+      data.push_back((float)curr->command / 3.0f);
+      data.push_back(curr->amount_norm);
+      data.push_back((float)curr->player_pos / 9.0f);
+    }
+    idx++;
+    curr = curr->next;
+  }
+  int len = (int)data.size() / 3;
+  if (len == 0) return torch::zeros({1, 1, 3});
   return torch::from_blob(data.data(), {len, 1, 3}, torch::kFloat).clone();
 }
 
@@ -88,6 +113,13 @@ Action AIRL::doTurn(const Info& info)
 
   // 1. Get current opponent features
   std::vector<float> opp_feats = get_opponent_features();
+
+  // Capture range type for EMA update at end of hand (Info only available here).
+  // RANGE_UNKNOWN=2, LINEAR=1, POLAR=0 — normalized by /2.
+  {
+      int oppIdx = (info.yourIndex == 0) ? 1 : 0;
+      last_range_type_raw = (float)getOpponentRangeType(info, oppIdx) / 2.0f;
+  }
   
   // 2. forward pass through the graph rnn
   torch::Tensor state_full = TensorConverter::infoToTensor(info, opp_feats);
@@ -97,8 +129,14 @@ Action AIRL::doTurn(const Info& info)
   torch::Tensor static_part = state.slice(1, 0, TensorConverter::STATIC_SIZE);
   torch::Tensor opp_part = state.slice(1, TensorConverter::STATIC_SIZE, TensorConverter::INPUT_SIZE);
   
-  torch::Tensor hist = history_to_tensor();
-  torch::Tensor out_vec = net->forward_with_history(static_part, hist, opp_part);
+  // Feed only new actions (since last doTurn) into the LSTM, carrying h/c state forward.
+  // This is O(delta) per decision instead of O(n^2) over the full history each time.
+  torch::Tensor delta = history_to_tensor_from(history_position);
+  auto fwd = net->forward_with_state(static_part, delta, opp_part, h_state, c_state);
+  torch::Tensor out_vec = std::get<0>(fwd);
+  h_state = std::get<1>(fwd);
+  c_state = std::get<2>(fwd);
+  history_position = history_length;
 
   // Guard: if weights are corrupted (NaN/Inf), skip this decision safely
   if (torch::any(torch::isnan(out_vec)).item<bool>() ||
@@ -175,6 +213,7 @@ Action AIRL::doTurn(const Info& info)
 
 void AIRL::onEvent(const Event& event) {
     if (event.type == E_NEW_DEAL) {
+        if (event.bigBlind > 0) current_big_blind = event.bigBlind;
         current_board.clear();
         opp_tracker.hb_probs_dirty = true; // reset cache for new hand
     } else if (event.type == E_FLOP) {
@@ -212,9 +251,11 @@ void AIRL::onEvent(const Event& event) {
         total_won += static_cast<float>(event.chips);
     }
 
-    // Mark hand as complete (E_WIN events follow in the same dispatch batch)
+    // Mark hand as complete and lock in this hand's range type for the cross-hand EMA.
     if (event.type == E_POT_DIVISION) {
         hand_complete = true;
+        opp_tracker.range_type_ema = 0.9f * opp_tracker.range_type_ema
+                                   + 0.1f * last_range_type_raw;
     }
 
     // At the start of a new hand: compute reward for the completed hand and update
@@ -230,17 +271,10 @@ void AIRL::onEvent(const Event& event) {
             // Uses total_won (what we won from pot) vs total_invested (what we put in)
             float chip_gain = (total_won - total_invested) / buy_in;
 
-            // NOTE: VPIP penalty removed — it was incorrectly penalizing any
-            // voluntary bet, creating systematic fold bias.
-
-            // Survival factor: only penalize catastrophic stack loss (< 20% of buy-in).
-            // We use min_stack (lowest point during the hand) rather than the raw
-            // min across all committed chips, so a brief dip for a call doesn't
-            // unfairly penalize profitable aggression.
-            float survival_factor = (min_stack < 0.2f * buy_in) ? 0.5f : 1.0f;
-
-            // Final reward
-            float reward = chip_gain * survival_factor;
+            // Reward is the raw chip gain signal — no survival multiplier.
+            // The chip gain already penalizes losing chips; a separate survival factor
+            // suppressed legitimate aggression (e.g. profitable all-ins) by design.
+            float reward = chip_gain;
 
             // Advantage over baseline for variance reduction
             float advantage = reward - reward_baseline;
@@ -321,6 +355,13 @@ void AIRL::update_opponent_stats(const Event& event) {
         opp_tracker.active_in_hand = true;
 
         if (event.type == E_RAISE) {
+            // Update sizing tell EMA: event.chips is the raise amount above call, in chips.
+            // We normalise by the big blind so the signal is stake-independent.
+            float raise_bb = (current_big_blind > 0)
+                             ? (float)event.chips / (float)current_big_blind
+                             : 1.0f;
+            opp_tracker.avg_raise_bb = 0.9f * opp_tracker.avg_raise_bb + 0.1f * raise_bb;
+
             updateOpponentRange(opp_tracker.assumed_range, current_board, 2);
             opp_tracker.hb_probs_dirty = true;
         } else if (event.type == E_CALL) {
@@ -404,6 +445,16 @@ std::vector<float> AIRL::get_opponent_features() {
     feats.push_back(calc_rate(opp_tracker.donk_history, 50));
     feats.push_back(calc_rate(opp_tracker.donk_history, 100));
 
+    // 22: Opponent average raise size in BB (EMA, capped at 10 BB, normalized 0-1).
+    // A high value flags opponents who habitually over-bet strong hands —
+    // the model can exploit this by folding more to large bets and calling down light on small ones.
+    feats.push_back(std::min(opp_tracker.avg_raise_bb / 10.0f, 1.0f));
+
+    // 23: Cross-hand range type EMA (0=polar, 0.5=linear, 1=unknown).
+    // Per-decision range type (static feature 23) is noisy early in a hand;
+    // this smoothed version provides a stable prior of the opponent's overall tendencies.
+    feats.push_back(opp_tracker.range_type_ema);
+
     return feats;
 }
 
@@ -414,9 +465,7 @@ float AIRL::applyEpochReward(float epoch_reward)
         // Simple final hand update using its own chip gain signal
         float total_invested = last_wager + last_action_cost;
         float chip_gain = (total_won - total_invested) / buy_in;
-        // Survival factor: only penalize critically low stack at end of hand
-        float survival_factor = (min_stack < 0.2f * buy_in) ? 0.5f : 1.0f;
-        float reward = chip_gain * survival_factor;
+        float reward = chip_gain;
         float advantage = reward - reward_baseline;
         reward_baseline = BASELINE_DECAY * reward_baseline + (1.0f - BASELINE_DECAY) * reward;
 

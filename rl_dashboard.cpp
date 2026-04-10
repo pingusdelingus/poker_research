@@ -12,7 +12,7 @@ RLDashboard::RLDashboard()
     , epoch(0), hands_this_epoch(0)
     , agent_stack(0), opponent_stack(0)
     , loss_value(0), learning_rate(0), noise_scale(0)
-    , total_wins(0), total_games(0), total_epochs_completed(0)
+    , total_wins(0), total_games(0), total_opp_busts(0), epoch_opp_busts(0), total_epochs_completed(0)
 {
     train_start = std::chrono::steady_clock::now();
     epoch_start = train_start;
@@ -57,7 +57,7 @@ void RLDashboard::onEvent(const Event& event)
     }
 }
 
-void RLDashboard::endEpoch(float a_stack, float o_stack, float loss, float lr, float noise, const std::vector<std::pair<int, float>>& saliency, int sub_wins, int sub_games)
+void RLDashboard::endEpoch(float a_stack, float o_stack, float loss, float lr, float noise, const std::vector<std::pair<int, float>>& saliency, int sub_wins, int sub_games, int opp_busts)
 {
     agent_stack = a_stack;
     opponent_stack = o_stack;
@@ -68,6 +68,8 @@ void RLDashboard::endEpoch(float a_stack, float o_stack, float loss, float lr, f
 
     total_wins += sub_wins;
     total_games += std::max(1, sub_games);
+    epoch_opp_busts = opp_busts;
+    total_opp_busts += opp_busts;
     total_epochs_completed++;
 
     EpochSnapshot snap;
@@ -239,12 +241,14 @@ void RLDashboard::render()
     else ss << " (D)";
     ss << "\n\n";
 
-    // Win rate
+    // Win rate (sub-games won / sub-games played — not epochs, since multiple sub-games run per epoch)
     ss << "  \033[4mWin Rate\033[0m\n";
-    float win_pct = (total_epochs_completed > 0)
-        ? 100.0f * total_wins / total_epochs_completed : 0.0f;
-    ss << "  Wins: " << total_wins << " / " << total_epochs_completed
-       << "  (" << std::fixed << std::setprecision(1) << win_pct << "%)\n";
+    float win_pct = (total_games > 0)
+        ? 100.0f * total_wins / total_games : 0.0f;
+    ss << "  Wins: " << total_wins << " / " << total_games
+       << "  (" << std::fixed << std::setprecision(1) << win_pct << "%)"
+       << "    Opp Busts This Epoch: " << epoch_opp_busts
+       << "  Total: " << total_opp_busts << "\n";
 
     // Win rate sparkline
     if (history.size() >= 2) {
@@ -337,20 +341,25 @@ void RLDashboard::render()
             // 4-13: Board cards
             "Board1_Rank", "Board1_Suit", "Board2_Rank", "Board2_Suit",
             "Board3_Rank", "Board3_Suit", "Board4_Rank", "Board4_Suit", "Board5_Rank", "Board5_Suit",
-            // 14-22: Game state (M-Ratio removed)
+            // 14-23: Game state + board derived
             "Pot", "Stack", "Call_Amt", "Wager", "Position", "Equity", "PotOdds%", "ActivePl",
-            // 22-23: Board derived features
             "BoardTexture", "OppRangeType",
-            // 24-30: Opponent HandBand probabilities (×2 scaled)
+            // 24-25: New static features
+            "RelBetSize", "Street",
+            // 26-32: Opponent HandBand probabilities
             "OppHB_Air", "OppHB_DrawWk", "OppHB_DrawStr", "OppHB_MadeWk", "OppHB_MadeMd", "OppHB_MadeStr", "OppHB_Nuts",
-            // 31-33: Live opponent stats
+            // 33-35: Live opponent stats
             "OppVPIP_Live", "OppPFR_Live", "Hist_Empty",
-            // 34-37: VPIP history
+            // 36-39: VPIP history
             "OppVPIP_10", "OppVPIP_30", "OppVPIP_50", "OppVPIP_100",
-            // 38-41: PFR history
+            // 40-43: PFR history
             "OppPFR_10", "OppPFR_30", "OppPFR_50", "OppPFR_100",
-            // 42-45: Donk history
-            "OppDonk_10", "OppDonk_30", "OppDonk_50", "OppDonk_100"
+            // 44-47: Donk history
+            "OppDonk_10", "OppDonk_30", "OppDonk_50", "OppDonk_100",
+            // 48: Sizing tell
+            "OppRaiseSize_BB",
+            // 49: Cross-hand range type EMA
+            "OppRangeType_EMA"
         };
 
         ss << "  \033[4mTop Feature Importance (Saliency)\033[0m\n";
@@ -411,23 +420,35 @@ void RLDashboard::writeFinalSummary(const std::string& output_path)
     double total_secs = std::chrono::duration<double>(now - train_start).count();
 
     static const std::vector<std::string> feature_names = {
+        // 0-3: Hole cards
         "Hole1_Rank", "Hole1_Suit", "Hole2_Rank", "Hole2_Suit",
+        // 4-13: Board cards
         "Board1_Rank", "Board1_Suit", "Board2_Rank", "Board2_Suit",
         "Board3_Rank", "Board3_Suit", "Board4_Rank", "Board4_Suit", "Board5_Rank", "Board5_Suit",
+        // 14-23: Game state + board derived
         "Pot", "Stack", "Call_Amt", "Wager", "Position", "Equity", "PotOdds%", "ActivePl",
         "BoardTexture", "OppRangeType",
+        // 24-25: New static features
+        "RelBetSize", "Street",
+        // 26-32: Opponent HandBand probabilities
         "OppHB_Air", "OppHB_DrawWk", "OppHB_DrawStr", "OppHB_MadeWk", "OppHB_MadeMd", "OppHB_MadeStr", "OppHB_Nuts",
+        // 33-35: Live opponent stats
         "OppVPIP_Live", "OppPFR_Live", "Hist_Empty",
+        // 36-39: VPIP history
         "OppVPIP_10", "OppVPIP_30", "OppVPIP_50", "OppVPIP_100",
+        // 40-43: PFR history
         "OppPFR_10", "OppPFR_30", "OppPFR_50", "OppPFR_100",
-        "OppDonk_10", "OppDonk_30", "OppDonk_50", "OppDonk_100"
+        // 44-47: Donk history
+        "OppDonk_10", "OppDonk_30", "OppDonk_50", "OppDonk_100",
+        // 48: Sizing tell
+        "OppRaiseSize_BB"
     };
 
     std::ofstream f(output_path);
     if (!f.is_open()) return;
 
-    float win_pct = (total_epochs_completed > 0)
-        ? 100.0f * total_wins / total_epochs_completed : 0.0f;
+    float win_pct = (total_games > 0)
+        ? 100.0f * total_wins / total_games : 0.0f;
     float avg_epoch_time = (total_epochs_completed > 0) ? total_secs / total_epochs_completed : 0.0f;
 
     f << "================================================================\n";
@@ -440,8 +461,9 @@ void RLDashboard::writeFinalSummary(const std::string& output_path)
     f << "  Avg epoch time:  " << formatFloat(avg_epoch_time, 1, false) << "s\n\n";
 
     f << "Win Rate\n";
-    f << "  Wins: " << total_wins << " / " << total_epochs_completed
-      << "  (" << formatFloat(win_pct, 1, false) << "%)\n\n";
+    f << "  Wins: " << total_wins << " / " << total_games
+      << "  (" << formatFloat(win_pct, 1, false) << "%)\n";
+    f << "  Opponent busts: " << total_opp_busts << "\n\n";
 
     f << "Last Epoch Results\n";
     f << "  Phase:           " << training_phase << "\n";

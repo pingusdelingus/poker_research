@@ -25,7 +25,7 @@ public:
     void endEpoch(float agent_stack, float opponent_stack,
                   float loss_value, float learning_rate, float noise_scale,
                   const std::vector<std::pair<int, float>>& saliency = {},
-                  int sub_wins = 0, int sub_games = 1);
+                  int sub_wins = 0, int sub_games = 1, int opp_busts = 0);
 
     // Called after checkpoint evaluation
     void addEvalResult(int epoch, float eval_stack);
@@ -76,6 +76,8 @@ private:
     // Running stats
     int total_wins;
     int total_games;
+    int total_opp_busts;
+    int epoch_opp_busts;
     int total_epochs_completed;
 
     // Timing

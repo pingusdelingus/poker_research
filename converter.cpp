@@ -68,10 +68,9 @@ torch::Tensor TensorConverter::infoToTensor(const Info& info, const std::vector<
   BoardTexture bt = getBoardTexture(board);
   features.push_back((float)bt / 6.0f);
 
-  // 24: Opponent Range Type (normalized 0-1)
+  // [23]: Opponent Range Type (normalized 0-1)
   int oppIdx = (info.yourIndex == 0) ? 1 : 0;
   if (info.getNumPlayers() > 2) {
-      // Find first active opponent that is not you
       for (int i = 0; i < info.getNumPlayers(); i++) {
           if (i != info.yourIndex && !info.players[i].folded) {
               oppIdx = i;
@@ -80,9 +79,30 @@ torch::Tensor TensorConverter::infoToTensor(const Info& info, const std::vector<
       }
   }
   RangeType rt = getOpponentRangeType(info, oppIdx);
-  features.push_back((float)rt / 2.0f); // 0-2 range
+  features.push_back((float)rt / 2.0f);
 
-  // Append Opponent Stats [26-40]
+  // [24]: Relative bet sizing — call_amount / pot (capped at 2x pot, normalized to 0-1).
+  // Encodes how large the current bet is relative to the pot so the model can detect
+  // opponent sizing tells (e.g. humans betting pot+ only with strong hands).
+  {
+      float pot_f  = (float)info.getPot();
+      float call_f = (float)info.getCallAmount();
+      float rel    = (pot_f > 0.0f) ? std::min(call_f / pot_f, 2.0f) * 0.5f : 0.0f;
+      features.push_back(rel);
+  }
+
+  // [25]: Street indicator (0=preflop, 1=flop, 2=turn, 3=river, normalized to 0-1).
+  // Explicit street context allows the model to learn street-specific strategy
+  // without having to infer it from missing board card slots.
+  {
+      int street = 0;
+      if      (board.size() == 3) street = 1;
+      else if (board.size() == 4) street = 2;
+      else if (board.size() >= 5) street = 3;
+      features.push_back((float)street / 3.0f);
+  }
+
+  // Append Opponent Stats [26-48]
   if (opponent_stats.size() == OPPONENT_SIZE) {
       features.insert(features.end(), opponent_stats.begin(), opponent_stats.end());
   } else {
